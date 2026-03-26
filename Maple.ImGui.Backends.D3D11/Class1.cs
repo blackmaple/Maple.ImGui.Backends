@@ -1,19 +1,37 @@
 ﻿using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.D3D11;
 using Hexa.NET.ImGui.Backends.Win32;
+using Maple.Hook.WinMsg;
 using Maple.RenderSpy.Graphics.D3D11.COM_D3D11Device;
+using Maple.RenderSpy.Graphics.D3D11.COM_D3D11DeviceContext;
 using Maple.RenderSpy.Graphics.D3D11.COM_DXGISwapChain;
 using Maple.RenderSpy.Graphics.Windows.COM;
 
 namespace Maple.ImGui.Backends.D3D11
 {
-    public class D3D11Backends
+    public class D3D11Backends(
+        ImGuiContextPtr  guiContextPtr,
+        ID3D11DevicePtr d3D11DevicePtr,
+        ID3D11DeviceContextPtr d3D11DeviceContextPtr,
+        WinMsgHookItem winMsgHookItem)
     {
+        ImGuiContextPtr _ImGuiContext = guiContextPtr;
+        ID3D11DevicePtr _ID3D11DevicePtr = d3D11DevicePtr;
+        ID3D11DeviceContextPtr _ID3D11DeviceContextPtr = d3D11DeviceContextPtr;
+        WinMsgHookItem WinMsgHookItem { get; } = winMsgHookItem;
 
         public unsafe static D3D11Backends Create(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory)
         {
             nint hWnd = pSwapChain.GetOutputWindow();
-            pSwapChain.GetDevice(out var pDevice);
+            if (hWnd == nint.Zero)
+            {
+                return ImGuiBackendException.Throw<D3D11Backends>("GetOutputWindow NULL");
+            }
+            var hResult = pSwapChain.GetDevice(out var pDevice);
+            if (!hResult)
+            {
+                return ImGuiBackendException.Throw<D3D11Backends>($"GetDevice ERROR:{hResult}");
+            }
             pDevice.GetImmediateContext(out var pContext);
 
             var winMsgHookItem = winMsgHookFactory.Create(hWnd);
@@ -26,12 +44,19 @@ namespace Maple.ImGui.Backends.D3D11
 
             var imguiContext = Hexa.NET.ImGui.ImGui.CreateContext();
             ImGuiImplWin32.SetCurrentContext(imguiContext);
-            ImGuiImplWin32.Init(hWnd.ToPointer());
+            if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
+            {
+                return ImGuiBackendException.Throw<D3D11Backends>($"ImGuiImplWin32 INIT ERROR");
+            }
 
+            var pID3D11DevicePtr = new ID3D11DevicePtr(pDevice.AsPointer<ID3D11DeviceImp, ID3D11Device>());
+            var pID3D11DeviceContextPtr = new ID3D11DeviceContextPtr(pContext.AsPointer<ID3D11DeviceContextImp, ID3D11DeviceContext>());
             ImGuiImplD3D11.SetCurrentContext(imguiContext);
-            ImGuiImplD3D11.Init(new ID3D11DevicePtr((ID3D11Device*)pDevice.PTR_IUNKNOWN.Pointer),
-                new ID3D11DeviceContextPtr((ID3D11DeviceContext*)pContext.PTR_IUNKNOWN.Pointer));
-
+            if (!ImGuiImplD3D11.Init(pID3D11DevicePtr, pID3D11DeviceContextPtr))
+            {
+                return ImGuiBackendException.Throw<D3D11Backends>($"ImGuiImplD3D11 INIT ERROR");
+            }
+            return new D3D11Backends(imguiContext, pID3D11DevicePtr, pID3D11DeviceContextPtr, winMsgHookItem);
         }
 
 
@@ -43,27 +68,22 @@ namespace Maple.ImGui.Backends.D3D11
         }
 
         public void RaiseRender()
-        { 
-        
+        {
+
         }
 
         public void EndFrame()
         {
             Hexa.NET.ImGui.ImGui.EndFrame();
             Hexa.NET.ImGui.ImGui.Render();
-           
-
             ImGuiImplD3D11.RenderDrawData(Hexa.NET.ImGui.ImGui.GetDrawData());
-
         }
 
         public void Shutdown()
         {
             ImGuiImplWin32.Shutdown();
-           
             ImGuiImplD3D11.Shutdown();
-          
-            Hexa.NET.ImGui.ImGui.DestroyContext
+            Hexa.NET.ImGui.ImGui.DestroyContext();
         }
     }
 }
