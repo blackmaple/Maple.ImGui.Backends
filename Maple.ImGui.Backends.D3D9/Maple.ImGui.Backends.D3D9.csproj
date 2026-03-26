@@ -1,9 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
+		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
+		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.325.1-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.D3D9" Version="0.26.324.1-rc" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Maple.ImGui.Backends\Maple.ImGui.Backends.csproj" />
+	</ItemGroup>
 
 </Project>

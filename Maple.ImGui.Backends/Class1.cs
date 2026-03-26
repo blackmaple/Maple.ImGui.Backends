@@ -10,21 +10,4 @@
     {
         void RaiseRender();
     }
-
-    public abstract class ImGuiRaiseRender(IImGuiCustomRender customRender) : IDisposable
-    {
-        protected IImGuiCustomRender CustomRender { get; } = customRender;
-
-        public abstract void NewFrame();
-        public abstract void Render();
-        public abstract void Shutdown();
-        public abstract void OnLostDevice();
-        public abstract void OnResetDevice();
-
-        public void Dispose()
-        {
-            this.Shutdown();
-            GC.SuppressFinalize(this);
-        }
-    }
 }

@@ -1,31 +1,30 @@
 ﻿using Hexa.NET.ImGui;
-using Hexa.NET.ImGui.Backends.D3D9;
+using Hexa.NET.ImGui.Backends.OpenGL3;
 using Hexa.NET.ImGui.Backends.Win32;
 using Maple.Hook.WinMsg;
-using Maple.RenderSpy.Graphics.D3D9.COM_Direct3DDevice9;
-using Maple.RenderSpy.Graphics.Windows.COM;
+using Maple.RenderSpy.Graphics.OPENGL;
 
-namespace Maple.ImGui.Backends.D3D9
+namespace Maple.ImGui.Backends.OPENGL
 {
-    public sealed class D3D9Backends(
+    public sealed class OpenGLBackends(
         ImGuiContextPtr guiContextPtr,
-        IDirect3DDevice9Ptr D3D9DevicePtr,
+     
         WinMsgHookItem winMsgHookItem,
         IImGuiCustomRender customRender) : ImGuiRaiseRenderBase(customRender)
     {
+        private const string _glslVersion = "#version 130"; // Default GLSL version, can be customized
+
         ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
-        IDirect3DDevice9Ptr ID3D9DevicePtr { get; set; } = D3D9DevicePtr;
+       
         WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
 
-        public unsafe static D3D9Backends Create(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> pDevice, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, IImGuiCustomRender customRender)
+        public unsafe static OpenGLBackends Create(HandleDeviceContext hdc, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, IImGuiCustomRender customRender)
         {
-            nint hWnd = pDevice.GetFocusWindow();
+            nint hWnd = hdc.WindowHandle;
             if (hWnd == nint.Zero)
             {
-                return ImGuiBackendException.Throw<D3D9Backends>("GetOutputWindow NULL");
+                return ImGuiBackendException.Throw<OpenGLBackends>("WindowHandle NULL");
             }
-  
-
 
             var winMsgHookItem = winMsgHookFactory.Create(hWnd);
             winMsgHookItem.SyncCallback += static (hWnd, uMsg, w, l, hookItem) => nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
@@ -36,30 +35,29 @@ namespace Maple.ImGui.Backends.D3D9
             ImGuiImplWin32.SetCurrentContext(imguiContext);
             if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
             {
-                return ImGuiBackendException.Throw<D3D9Backends>($"ImGuiImplWin32 INIT ERROR");
+                return ImGuiBackendException.Throw<OpenGLBackends>($"ImGuiImplWin32 INIT ERROR");
             }
 
-            var pID3D9DevicePtr = new IDirect3DDevice9Ptr(pDevice.AsPointer<IDirect3DDevice9Imp, IDirect3DDevice9 >());
-            ImGuiImplD3D9.SetCurrentContext(imguiContext);
-            if (!ImGuiImplD3D9.Init(pID3D9DevicePtr))
+            ImGuiImplOpenGL3.SetCurrentContext(imguiContext);
+            if (!ImGuiImplOpenGL3.Init(_glslVersion))
             {
-                return ImGuiBackendException.Throw<D3D9Backends>($"ImGuiImplD3D9 INIT ERROR");
+                return ImGuiBackendException.Throw<OpenGLBackends>($"ImGuiImplOpenGL INIT ERROR");
             }
-            return new D3D9Backends(imguiContext, pID3D9DevicePtr, winMsgHookItem, customRender);
+            return new OpenGLBackends(imguiContext,  winMsgHookItem, customRender);
         }
 
 
         protected override void NewFrame()
         {
             ImGuiImplWin32.NewFrame();
-            ImGuiImplD3D9.NewFrame();
+            ImGuiImplOpenGL3.NewFrame();
             Hexa.NET.ImGui.ImGui.NewFrame();
         }
         protected override void EndFrame()
         {
             Hexa.NET.ImGui.ImGui.EndFrame();
             Hexa.NET.ImGui.ImGui.Render();
-            ImGuiImplD3D9.RenderDrawData(Hexa.NET.ImGui.ImGui.GetDrawData());
+            ImGuiImplOpenGL3.RenderDrawData(Hexa.NET.ImGui.ImGui.GetDrawData());
         }
         protected override void Shutdown()
         {
@@ -68,17 +66,17 @@ namespace Maple.ImGui.Backends.D3D9
             if (!imguiContext.IsNull)
             {
                 ImGuiImplWin32.Shutdown();
-                ImGuiImplD3D9.Shutdown();
+                ImGuiImplOpenGL3.Shutdown();
                 Hexa.NET.ImGui.ImGui.DestroyContext(imguiContext);
             }
         }
         public override void OnLostDevice()
         {
-            ImGuiImplD3D9.InvalidateDeviceObjects();
+            throw new NotImplementedException();
         }
         public override void OnResetDevice()
         {
-            ImGuiImplD3D9.CreateDeviceObjects();
+            throw new NotImplementedException();
         }
     }
 

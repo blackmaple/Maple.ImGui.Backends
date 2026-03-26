@@ -4,30 +4,30 @@ using Hexa.NET.ImGui.Backends.Win32;
 using Maple.Hook.WinMsg;
 using Maple.RenderSpy.Graphics.D3D11.COM_D3D11Device;
 using Maple.RenderSpy.Graphics.D3D11.COM_D3D11DeviceContext;
-using Maple.RenderSpy.Graphics.D3D11.COM_DXGISwapChain;
+using Maple.RenderSpy.Graphics.DXGI.COM_DXGISwapChain;
 using Maple.RenderSpy.Graphics.Windows.COM;
-
 namespace Maple.ImGui.Backends.D3D11
 {
-    public class D3D11Backends(
-        ImGuiContextPtr  guiContextPtr,
+    public sealed class D3D11Backends(
+        ImGuiContextPtr guiContextPtr,
         ID3D11DevicePtr d3D11DevicePtr,
         ID3D11DeviceContextPtr d3D11DeviceContextPtr,
-        WinMsgHookItem winMsgHookItem)
+        WinMsgHookItem winMsgHookItem,
+        IImGuiCustomRender customRender) : ImGuiRaiseRenderBase(customRender)
     {
-        ImGuiContextPtr _ImGuiContext = guiContextPtr;
-        ID3D11DevicePtr _ID3D11DevicePtr = d3D11DevicePtr;
-        ID3D11DeviceContextPtr _ID3D11DeviceContextPtr = d3D11DeviceContextPtr;
-        WinMsgHookItem WinMsgHookItem { get; } = winMsgHookItem;
+        ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
+        ID3D11DevicePtr ID3D11DevicePtr { get; set; } = d3D11DevicePtr;
+        ID3D11DeviceContextPtr ID3D11DeviceContextPtr { get; set; } = d3D11DeviceContextPtr;
+        WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
 
-        public unsafe static D3D11Backends Create(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory)
+        public unsafe static D3D11Backends Create(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory,IImGuiCustomRender customRender )
         {
             nint hWnd = pSwapChain.GetOutputWindow();
             if (hWnd == nint.Zero)
             {
                 return ImGuiBackendException.Throw<D3D11Backends>("GetOutputWindow NULL");
             }
-            var hResult = pSwapChain.GetDevice(out var pDevice);
+            var hResult = pSwapChain.GetDevice<ID3D11DeviceImp>(ID3D11DeviceImp.GUID, out var pDevice);
             if (!hResult)
             {
                 return ImGuiBackendException.Throw<D3D11Backends>($"GetDevice ERROR:{hResult}");
@@ -35,10 +35,7 @@ namespace Maple.ImGui.Backends.D3D11
             pDevice.GetImmediateContext(out var pContext);
 
             var winMsgHookItem = winMsgHookFactory.Create(hWnd);
-            winMsgHookItem.SyncCallback += (hWnd, uMsg, w, l, hookItem) =>
-            {
-                return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
-            };
+            winMsgHookItem.SyncCallback += static (hWnd, uMsg, w, l, hookItem) => nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
             winMsgHookItem.EnabledSyncCallback = true;
 
 
@@ -56,34 +53,40 @@ namespace Maple.ImGui.Backends.D3D11
             {
                 return ImGuiBackendException.Throw<D3D11Backends>($"ImGuiImplD3D11 INIT ERROR");
             }
-            return new D3D11Backends(imguiContext, pID3D11DevicePtr, pID3D11DeviceContextPtr, winMsgHookItem);
+            return new D3D11Backends(imguiContext, pID3D11DevicePtr, pID3D11DeviceContextPtr, winMsgHookItem, customRender);
         }
 
 
-        public void NewFrame()
+        protected override void NewFrame()
         {
             ImGuiImplWin32.NewFrame();
             ImGuiImplD3D11.NewFrame();
             Hexa.NET.ImGui.ImGui.NewFrame();
         }
-
-        public void RaiseRender()
-        {
-
-        }
-
-        public void EndFrame()
+        protected override void EndFrame()
         {
             Hexa.NET.ImGui.ImGui.EndFrame();
             Hexa.NET.ImGui.ImGui.Render();
             ImGuiImplD3D11.RenderDrawData(Hexa.NET.ImGui.ImGui.GetDrawData());
         }
-
-        public void Shutdown()
+        protected override void Shutdown()
         {
-            ImGuiImplWin32.Shutdown();
-            ImGuiImplD3D11.Shutdown();
-            Hexa.NET.ImGui.ImGui.DestroyContext();
+            var imguiContext = this.ImGuiContextPtr;
+            this.ImGuiContextPtr = default;
+            if (!imguiContext.IsNull)
+            {
+                ImGuiImplWin32.Shutdown();
+                ImGuiImplD3D11.Shutdown();
+                Hexa.NET.ImGui.ImGui.DestroyContext(imguiContext);
+            }
+        }
+        public override void OnLostDevice()
+        {
+            ImGuiImplD3D11.InvalidateDeviceObjects();
+        }
+        public override void OnResetDevice()
+        {
+            throw new NotImplementedException();
         }
     }
 }
