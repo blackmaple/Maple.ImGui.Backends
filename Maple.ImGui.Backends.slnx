@@ -3,6 +3,7 @@
   <Project Path="Maple.ImGui.Backends.D3D11/Maple.ImGui.Backends.D3D11.csproj" />
   <Project Path="Maple.ImGui.Backends.D3D9/Maple.ImGui.Backends.D3D9.csproj" />
   <Project Path="Maple.ImGui.Backends.OPENGL/Maple.ImGui.Backends.OPENGL.csproj" />
+  <Project Path="Maple.ImGui.Backends.Test/Maple.ImGui.Backends.Test.csproj" Id="71ea2739-aaf7-4af4-b08a-7a73fb6d32ca" />
   <Project Path="Maple.ImGui.Backends.VULKAN/Maple.ImGui.Backends.VULKAN.csproj" />
   <Project Path="Maple.ImGui.Backends/Maple.ImGui.Backends.csproj" />
 </Solution>
