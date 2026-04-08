@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Maple.Hook.Imp.Dobby.Static" Version="0.26.401.3-rc" />
+		<PackageReference Include="Maple.MonoGameAssistant.GameDTO" Version="1.3.5-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.DXGI" Version="0.26.401.15-rc" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
+
+
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D11\Maple.ImGui.Backends.D3D11.csproj" />
+	  <ProjectReference Include="..\Maple.ImGui.Backends.Windows\Maple.ImGui.Backends.Windows.csproj" />
+	  <ProjectReference Include="..\Maple.ImGui.Backends\Maple.ImGui.Backends.csproj" />
+	</ItemGroup>
+</Project>

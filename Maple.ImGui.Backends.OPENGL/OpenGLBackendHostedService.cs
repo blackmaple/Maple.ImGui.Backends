@@ -11,8 +11,8 @@ namespace Maple.ImGui.Backends.OPENGL
 
         OPENGLwglSwapBuffersHookItem HookItem { get; set; }
 
-        public OpenGLBackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, IImGuiCustomRender imGuiCustomRender)
-            : base(hookFactory, winMsgHookFactory, imGuiCustomRender)
+        public OpenGLBackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
+            : base(hookFactory, winMsgHookFactory, controller)
         {
 
             this.HookItem = hookFactory.Create<OPENGLwglSwapBuffersHookItem>(EnumGraphicsType.OPENGL);
@@ -24,8 +24,8 @@ namespace Maple.ImGui.Backends.OPENGL
 
         private bool Hook_wglSwapBuffers(HandleDeviceContext hdc, OPENGLwglSwapBuffersHookItem hookItem)
         {
-            BackendImp ??= OpenGLBackendImp.CreateImp(hdc, WinMsgHookFactory, ImGuiCustomRender);
-            BackendImp.RaiseRender();
+            BackendImp ??= OpenGLBackendImp.CreateImp(hdc, WinMsgHookFactory, this.Controller);
+            BackendImp.Run(hdc.HandleContext);
             return hookItem.OriginalMethod.Invoke(hdc.HandleContext);
         }
 

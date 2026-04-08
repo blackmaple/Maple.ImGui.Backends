@@ -11,41 +11,45 @@ namespace Maple.ImGui.Backends.D3D10
 {
     internal sealed class D3D10BackendImp(
         ImGuiContextPtr guiContextPtr,
-        ID3D10DevicePtr D3D10DevicePtr,
+        COM_PTR_IUNKNOWN<ID3D10DeviceImp> D3D10DevicePtr,
         WinMsgHookItem winMsgHookItem,
-        IImGuiCustomRender customRender) : ImGuiRaiseRenderBase(customRender)
+        ImGuiController controller) : ImGuiRaiseRenderBase(controller)
 
     {
         ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
-        ID3D10DevicePtr ID3D10DevicePtr { get; set; } = D3D10DevicePtr;
+        COM_PTR_IUNKNOWN<ID3D10DeviceImp> ID3D10DevicePtr { get; set; } = D3D10DevicePtr;
+
         WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
 
-        public unsafe static D3D10BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, IImGuiCustomRender customRender)
+        public unsafe static D3D10BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
         {
             var hWnd = pSwapChain.GetOutputWindow();
             if (hWnd == nint.Zero)
             {
                 return ImGuiBackendException.Throw<D3D10BackendImp>("GetOutputWindow IS NULL");
             }
-            ImGuiWin32InputBridge.SetWindowHandle(hWnd);
+
             var hResult = pSwapChain.GetDevice<ID3D10DeviceImp>(ID3D10DeviceImp.GUID, out var pDevice);
             if (!hResult)
             {
                 return ImGuiBackendException.Throw<D3D10BackendImp>($"GetDevice ERROR:{hResult}");
             }
-            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
-            winMsgHookItem.SyncCallback += static (hWnd, uMsg, w, l, hookItem) => nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
-            winMsgHookItem.EnabledSyncCallback = true;
-            winMsgHookItem.Start();
 
             var imguiContext = Hexa.NET.ImGui.ImGui.CreateContext();
             ImGuiImplWin32.SetCurrentContext(imguiContext);
-            var dpiScale = MathF.Max(1.0f, ImGuiImplWin32.GetDpiScaleForHwnd(hWnd.ToPointer()));
-            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f * dpiScale);
             if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
             {
                 return ImGuiBackendException.Throw<D3D10BackendImp>($"ImGuiImplWin32 INIT ERROR");
             }
+            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f);
+
+            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
+            winMsgHookItem.SyncCallback += (hWnd, uMsg, w, l, hookItem) =>
+            {
+                return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
+            };
+            winMsgHookItem.EnabledSyncCallback = true;
+            winMsgHookItem.Start();
 
             var pID3D10DevicePtr = new ID3D10DevicePtr(pDevice.AsPointer<ID3D10DeviceImp, ID3D10Device>());
             ImGuiImplD3D10.SetCurrentContext(imguiContext);
@@ -53,25 +57,37 @@ namespace Maple.ImGui.Backends.D3D10
             {
                 return ImGuiBackendException.Throw<D3D10BackendImp>($"ImGuiImplD3D10 INIT ERROR");
             }
-            return new D3D10BackendImp(imguiContext, pID3D10DevicePtr, winMsgHookItem, customRender);
+            return new D3D10BackendImp(imguiContext, pDevice, winMsgHookItem, controller);
         }
 
-        protected override void NewFrame()
+        protected override void Starting(nint context)
         {
             ImGuiImplWin32.NewFrame();
-            if (ImGuiWin32InputBridge.TryGetMousePosition(out var mousePosition))
-            {
-                Hexa.NET.ImGui.ImGui.GetIO().MousePos = mousePosition;
-            }
             ImGuiImplD3D10.NewFrame();
             Hexa.NET.ImGui.ImGui.NewFrame();
         }
-        protected override void EndFrame()
+
+        protected override void Start(nint context)
+        {
+            this.Controller.CustomRender?.RaiseRender();
+        }
+
+        protected override void Started(nint context)
         {
             Hexa.NET.ImGui.ImGui.EndFrame();
             Hexa.NET.ImGui.ImGui.Render();
+        }
+
+        protected override void Build(nint context)
+        {
             ImGuiImplD3D10.RenderDrawData(Hexa.NET.ImGui.ImGui.GetDrawData());
         }
+
+
+
+
+
+
         protected override void Shutdown()
         {
             var imguiContext = this.ImGuiContextPtr;
@@ -84,13 +100,19 @@ namespace Maple.ImGui.Backends.D3D10
             }
             this.WinMsgHookItem.Dispose();
         }
-        public override void OnLostDevice()
+
+        public override void Resetting(nint context)
         {
-            ImGuiImplD3D10.InvalidateDeviceObjects();
+
+
         }
-        public override void OnResetDevice()
+        public override void Reset(nint context)
         {
-            throw new NotImplementedException();
+           ImGuiImplD3D10.InvalidateDeviceObjects();
+        }
+        public override void Resetted(nint context)
+        {
+            ImGuiImplD3D10.CreateDeviceObjects();
         }
 
     }

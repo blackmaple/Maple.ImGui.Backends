@@ -11,20 +11,20 @@ namespace Maple.ImGui.Backends.D3D10
         DXGIPresentHookItem HookItem { get; }
         D3D10BackendImp? BackendImp { get; set; }
 
-        public D3D10BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, IImGuiCustomRender imGuiCustomRender)
-            : base(hookFactory, winMsgHookFactory, imGuiCustomRender)
+        public D3D10BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
+            : base(hookFactory, winMsgHookFactory, controller)
         {
 
-            this.HookItem = hookFactory.Create<DXGIPresentHookItem>( EnumGraphicsType.D3D10);
+            this.HookItem = hookFactory.Create<DXGIPresentHookItem>(EnumGraphicsType.D3D10);
             this.HookItem.SyncCallback = HookPresent;
-         //   this.HookItem.Enable();
+            //   this.HookItem.Enable();
         }
 
 
         private COM_HRESULT HookPresent(COM_PTR_IUNKNOWN<IDXGISwapChainImp> @this, uint SyncInterval, uint Flags, DXGIPresentHookItem hookItem)
         {
-            BackendImp ??= D3D10BackendImp.CreateImp(@this, WinMsgHookFactory, ImGuiCustomRender);
-            BackendImp.RaiseRender();
+            BackendImp ??= D3D10BackendImp.CreateImp(@this, WinMsgHookFactory, this.Controller);
+            BackendImp.Run(@this);
             return hookItem.OriginalMethod.Invoke(@this, SyncInterval, Flags);
         }
 

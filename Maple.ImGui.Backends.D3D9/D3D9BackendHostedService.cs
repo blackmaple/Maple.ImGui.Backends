@@ -12,8 +12,8 @@ namespace Maple.ImGui.Backends.D3D9
         D3D9EndSceneHookItem EndSceneHookItem { get; set; }
         D3D9ResetHookItem ResetHookItem { get; set; }
 
-        public D3D9BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, IImGuiCustomRender imGuiCustomRender)
-         : base(hookFactory, winMsgHookFactory, imGuiCustomRender)
+        public D3D9BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
+         : base(hookFactory, winMsgHookFactory, controller)
         {
 
             this.EndSceneHookItem = hookFactory.Create<D3D9EndSceneHookItem>(EnumGraphicsType.D3D9);
@@ -43,24 +43,22 @@ namespace Maple.ImGui.Backends.D3D9
 
         private COM_HRESULT HookEndScene(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> @this, D3D9EndSceneHookItem hookItem)
         {
-            BackendImp ??= D3D9BackendImp.CreateImp(@this, WinMsgHookFactory, ImGuiCustomRender);
-            BackendImp.RaiseRender();
+            BackendImp ??= D3D9BackendImp.CreateImp(@this, WinMsgHookFactory, Controller);
+            BackendImp.Run(@this);
             return hookItem.OriginalMethod.Invoke(@this);
         }
 
         private COM_HRESULT HookReset(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> @this, UnsafePtr ptr, D3D9ResetHookItem hookItem)
         {
-            if (BackendImp is null)
+            if (BackendImp is not null)
             {
-                return hookItem.OriginalMethod.Invoke(@this, ptr);
+                BackendImp.Resetting(@this);
+                BackendImp.Reset(@this);
+                var h = hookItem.OriginalMethod.Invoke(@this, ptr);
+                BackendImp.Resetted(@this);
+                return h;
             }
-            else
-            {
-                BackendImp.OnLostDevice();
-                var r = hookItem.OriginalMethod.Invoke(@this, ptr);
-                BackendImp.OnResetDevice();
-                return r;
-            }
+            return hookItem.OriginalMethod.Invoke(@this, ptr);
         }
     }
 }

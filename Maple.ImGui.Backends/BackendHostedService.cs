@@ -7,11 +7,11 @@ namespace Maple.ImGui.Backends
     public abstract class BackendHostedService(
         IGraphicsHookFactory hookFactory,
         WinMsgHookFactory winMsgHookFactory,
-        IImGuiCustomRender imGuiCustomRender) : IHostedService
+        ImGuiController  imGuiController) : IHostedService
     {
         protected IGraphicsHookFactory GraphicsHookFactory { get; } = hookFactory;
         protected WinMsgHookFactory WinMsgHookFactory { get; } = winMsgHookFactory;
-        protected IImGuiCustomRender ImGuiCustomRender { get; } = imGuiCustomRender;
+        protected ImGuiController  Controller { get; } = imGuiController;
 
         public abstract Task StartAsync(CancellationToken cancellationToken);
 

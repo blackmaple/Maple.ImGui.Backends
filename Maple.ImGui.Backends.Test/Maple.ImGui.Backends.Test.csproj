@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
+	 
 		<TargetFramework>net10.0-windows</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -13,8 +14,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Hexa.NET.ImGui.Widgets" Version="1.2.15" />
 		<PackageReference Include="Maple.MonoGameAssistant.GameCore" Version="1.3.5-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics" Version="0.26.401.5-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.DXGI" Version="0.26.401.15-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.Windows" Version="0.26.401.5-rc" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
        <PackageReference Include="Vortice.Direct3D9" Version="3.8.3" />
@@ -23,20 +26,14 @@
 		<PackageReference Include="Vortice.Mathematics" Version="2.1.0" />
 		
 	</ItemGroup>
- <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-		<PackageReference Include="Maple.Hook.Imp.Dobby.Dynamic" Version="0.26.317.1-rc" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(PublishAot)' == 'true'">
-		<PackageReference Include="Maple.Hook.Imp.Dobby.Static" Version="0.26.317.1-rc" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+ 
+ <ItemGroup>
+	 <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+	 <PackageReference Include="Maple.Hook.Imp.Dobby.Dynamic" Version="0.26.401.3-rc" />
 
-	</ItemGroup>
+ </ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D10\Maple.ImGui.Backends.D3D10.csproj" />
 	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D11\Maple.ImGui.Backends.D3D11.csproj" />
-	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D9\Maple.ImGui.Backends.D3D9.csproj" />
-	  <ProjectReference Include="..\Maple.ImGui.Backends.OPENGL\Maple.ImGui.Backends.OPENGL.csproj" />
+	  <ProjectReference Include="..\Maple.ImGui.Backends.GameUI\Maple.ImGui.Backends.GameUI.csproj" />
 	</ItemGroup>
 </Project>

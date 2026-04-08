@@ -2,8 +2,12 @@
   <Project Path="Maple.ImGui.Backends.D3D10/Maple.ImGui.Backends.D3D10.csproj" />
   <Project Path="Maple.ImGui.Backends.D3D11/Maple.ImGui.Backends.D3D11.csproj" />
   <Project Path="Maple.ImGui.Backends.D3D9/Maple.ImGui.Backends.D3D9.csproj" />
+  <Project Path="Maple.ImGui.Backends.GameUI/Maple.ImGui.Backends.GameUI.csproj" Id="6f7c8576-8987-4a33-8011-b67092056342" />
   <Project Path="Maple.ImGui.Backends.OPENGL/Maple.ImGui.Backends.OPENGL.csproj" />
+  <Project Path="Maple.ImGui.Backends.Platform/Maple.ImGui.Backends.Platform.csproj" Id="cd4b41c1-72cd-486a-ab84-181837f87cb0" />
   <Project Path="Maple.ImGui.Backends.Test/Maple.ImGui.Backends.Test.csproj" Id="71ea2739-aaf7-4af4-b08a-7a73fb6d32ca" />
+  <Project Path="Maple.ImGui.Backends.Unity/Maple.ImGui.Backends.Unity.csproj" Id="6dfa994f-67d1-41be-bbdb-1253f7308ae9" />
   <Project Path="Maple.ImGui.Backends.VULKAN/Maple.ImGui.Backends.VULKAN.csproj" />
+  <Project Path="Maple.ImGui.Backends.Windows/Maple.ImGui.Backends.Windows.csproj" Id="ac577ead-6081-45fa-880b-3d14de4d2fe9" />
   <Project Path="Maple.ImGui.Backends/Maple.ImGui.Backends.csproj" />
 </Solution>

@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Maple.Hook.WinMsg" Version="0.26.325.1-rc" />
-    <PackageReference Include="Maple.RenderSpy.Graphics" Version="0.26.327.2-rc" />
+    <PackageReference Include="Maple.Hook.WinMsg" Version="0.26.403.10-rc" />
+    <PackageReference Include="Maple.RenderSpy.Graphics" Version="0.26.401.5-rc" />
     <PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
 
   </ItemGroup>

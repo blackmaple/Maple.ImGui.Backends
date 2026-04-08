@@ -10,62 +10,66 @@ namespace Maple.ImGui.Backends.OPENGL
     internal sealed class OpenGLBackendImp(
         ImGuiContextPtr guiContextPtr,
 
+
         WinMsgHookItem winMsgHookItem,
-        IImGuiCustomRender customRender) : ImGuiRaiseRenderBase(customRender)
+        ImGuiController controller) : ImGuiRaiseRenderBase(controller)
     {
         private const string _glslVersion = "#version 130"; // Default GLSL version, can be customized
 
         ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
 
+
         WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
 
-        public unsafe static OpenGLBackendImp CreateImp(HandleDeviceContext hdc, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, IImGuiCustomRender customRender)
+        public unsafe static OpenGLBackendImp CreateImp(HandleDeviceContext hdc, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
         {
-            nint hWnd = hdc.WindowHandle;
+            var hWnd = hdc.WindowHandle;
             if (hWnd == nint.Zero)
             {
                 return ImGuiBackendException.Throw<OpenGLBackendImp>("WindowHandle NULL");
             }
-            ImGuiWin32InputBridge.SetWindowHandle(hWnd);
-
-            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
-            winMsgHookItem.SyncCallback += static (hWnd, uMsg, w, l, hookItem) => nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
-            winMsgHookItem.EnabledSyncCallback = true;
-            winMsgHookItem.Start();
 
             var imguiContext = Hexa.NET.ImGui.ImGui.CreateContext();
             ImGuiImplWin32.SetCurrentContext(imguiContext);
-            var dpiScale = MathF.Max(1.0f, ImGuiImplWin32.GetDpiScaleForHwnd(hWnd.ToPointer()));
-            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f * dpiScale);
             if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
             {
                 return ImGuiBackendException.Throw<OpenGLBackendImp>($"ImGuiImplWin32 INIT ERROR");
             }
+            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
+            winMsgHookItem.SyncCallback += (hWnd, uMsg, w, l, hookItem) =>
+            {
+                return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
+            };
+            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f);
+            winMsgHookItem.EnabledSyncCallback = true;
+            winMsgHookItem.Start();
 
             ImGuiImplOpenGL3.SetCurrentContext(imguiContext);
             if (!ImGuiImplOpenGL3.Init(_glslVersion))
             {
                 return ImGuiBackendException.Throw<OpenGLBackendImp>($"ImGuiImplOpenGL INIT ERROR");
             }
-            return new OpenGLBackendImp(imguiContext, winMsgHookItem, customRender);
+            return new OpenGLBackendImp(imguiContext, winMsgHookItem, controller);
         }
 
-        protected override void NewFrame()
+        protected override void Starting(nint context)
         {
             ImGuiImplWin32.NewFrame();
-            if (ImGuiWin32InputBridge.TryGetMousePosition(out var mousePosition))
-            {
-                Hexa.NET.ImGui.ImGui.GetIO().MousePos = mousePosition;
-            }
             ImGuiImplOpenGL3.NewFrame();
             Hexa.NET.ImGui.ImGui.NewFrame();
         }
-        protected override void EndFrame()
+        protected override void Start(nint context)
+        {
+            this.Controller.CustomRender?.RaiseRender();
+        }
+        protected override void Started(nint context)
         {
             Hexa.NET.ImGui.ImGui.EndFrame();
             Hexa.NET.ImGui.ImGui.Render();
-            ImGuiImplOpenGL3.RenderDrawData(Hexa.NET.ImGui.ImGui.GetDrawData());
         }
+        protected override void Build(nint context) { ImGuiImplOpenGL3.RenderDrawData(Hexa.NET.ImGui.ImGui.GetDrawData()); }
+
+
         protected override void Shutdown()
         {
             var imguiContext = this.ImGuiContextPtr;
@@ -77,13 +81,21 @@ namespace Maple.ImGui.Backends.OPENGL
                 Hexa.NET.ImGui.ImGui.DestroyContext(imguiContext);
             }
         }
-        public override void OnLostDevice()
+
+        public override void Reset(nint context)
         {
-            throw new NotImplementedException();
+
+
         }
-        public override void OnResetDevice()
+        public override void Resetting(nint context)
         {
-            throw new NotImplementedException();
+
+
+        }
+        public override void Resetted(nint context)
+        {
+
+
         }
     }
 

@@ -6,30 +6,24 @@ namespace Maple.ImGui.Backends
 {
     public static class ImGuiSystemFontLoader
     {
+        // Preferred Chinese font loading order:
+        // 1. Microsoft YaHei collection/font
+        // 2. Microsoft YaHei bold collection/font
+        // 3. SimSun
+        // 4. SimHei
+        // The first existing file in this list will be loaded as the default ImGui font.
         private static readonly string[] PreferredFontFiles =
         [
-            "msyh.ttc",
-            "msyh.ttf",
-            "msyhbd.ttc",
-            "msyhbd.ttf",
-            "simsun.ttc",
-            "simhei.ttf"
+                  "msyh.ttc",        // 微软雅黑
+        "msyhbd.ttc",      // 微软雅黑粗体
+        "simsun.ttc",      // 宋体
+        "dengxian.ttf",    // 等线
+        "PingFang.ttc",    // macOS 苹方
+        "NotoSansCJK-Regular.ttf" // Linux Noto
         ];
 
-        private static readonly uint[] ChineseGlyphRanges =
-        [
-            0x0020, 0x00FF,
-            0x2000, 0x206F,
-            0x3000, 0x30FF,
-            0x31F0, 0x31FF,
-            0x3400, 0x4DBF,
-            0x4E00, 0x9FFF,
-            0xF900, 0xFAFF,
-            0xFF00, 0xFFEF,
-            0
-        ];
 
-        private static readonly GCHandle ChineseGlyphRangesHandle = GCHandle.Alloc(ChineseGlyphRanges, GCHandleType.Pinned);
+
 
         public static bool LoadPreferredChineseSystemFont(float fontSize = 18.0f)
         {
@@ -70,14 +64,19 @@ namespace Maple.ImGui.Backends
             }
 
             var io = ImGuiApi.GetIO();
-            var glyphRanges = (uint*)ChineseGlyphRangesHandle.AddrOfPinnedObject();
-            var font = ImGuiApi.AddFontFromFileTTF(io.Fonts, fontPath, fontSize, glyphRanges);
+
+            ImFontConfigPtr fontConfig = ImGuiApi.ImFontConfig(); //ImGuiNative.ImFontConfig_ImFontConfig();
+            fontConfig.OversampleH = 3;  // 提高清晰度
+            fontConfig.OversampleV = 1;
+            fontConfig.PixelSnapH = false;
+            var font = ImGuiApi.AddFontFromFileTTF(io.Fonts, fontPath, fontSize, fontConfig, io.Fonts.GetGlyphRangesDefault());
             if (font.IsNull)
             {
                 return false;
             }
 
             io.FontDefault = font;
+
             return true;
         }
     }
