@@ -27,8 +27,7 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.PushID($"{attribute.ObjectId ?? attribute.DisplayName ?? "Switch"}_{index}");
             var valueChanged = false;
             var originalContentValue = attribute.ContentValue;
-            var originalDecimalValue = attribute.DecimalValue;
-            var originalSwitchValue = attribute.SwitchValue;
+            var hasSelectableOptions = attribute.SelectedContents is { Count: > 0 };
 
             if (attribute.TextEditorType)
             {
@@ -52,7 +51,17 @@ namespace Maple.ImGui.Backends.GameUI
             {
                 const float actionButtonWidth = 88.0f;
                 CenterSwitchEditorControl(actionButtonWidth);
-                valueChanged = ImGuiApi.Button("Action", new Vector2(actionButtonWidth, 0.0f));
+                PushUnifiedInteractiveStyle();
+                valueChanged = ImGuiApi.Button(GetUiText("Switch.Action"), new Vector2(actionButtonWidth, 0.0f));
+                PopUnifiedInteractiveStyle();
+            }
+            else if (attribute.MultipleType)
+            {
+                valueChanged = RenderSwitchDisplayMultiSelectEditor(attribute);
+            }
+            else if (attribute.SelectsType || hasSelectableOptions)
+            {
+                valueChanged = RenderSwitchDisplaySelectEditor(attribute);
             }
             else if (attribute.SwitchesType)
             {
@@ -64,14 +73,6 @@ namespace Maple.ImGui.Backends.GameUI
                     valueChanged = true;
                 }
             }
-            else if (attribute.MultipleType)
-            {
-                valueChanged = RenderSwitchDisplayMultiSelectEditor(attribute);
-            }
-            else if (attribute.SelectsType)
-            {
-                valueChanged = RenderSwitchDisplaySelectEditor(attribute);
-            }
             else
             {
                 ImGuiApi.TextUnformatted(attribute.ContentValue ?? string.Empty);
@@ -81,11 +82,11 @@ namespace Maple.ImGui.Backends.GameUI
             {
                 if (ShowCharacterStatusDialog && ViewingCharacterStatus is not null)
                 {
-                    HandleCharacterStatusValueChanged(attribute, originalContentValue, originalDecimalValue, originalSwitchValue);
+                    HandleCharacterStatusValueChanged(attribute, originalContentValue);
                 }
                 else
                 {
-                    HandleSwitchDisplayValueChanged(attribute, originalContentValue, originalDecimalValue, originalSwitchValue);
+                    HandleSwitchDisplayValueChanged(attribute, originalContentValue);
                 }
             }
 
@@ -97,6 +98,7 @@ namespace Maple.ImGui.Backends.GameUI
             var selectedValues = ParseSelectedValues(attribute.ContentValue);
             var selectedContents = attribute.SelectedContents ?? [];
             var valueChanged = false;
+            PushUnifiedInteractiveStyle();
             foreach (var option in selectedContents)
             {
                 var optionKey = option.DisplayValue ?? string.Empty;
@@ -118,6 +120,8 @@ namespace Maple.ImGui.Backends.GameUI
                 }
             }
 
+            PopUnifiedInteractiveStyle();
+
             return valueChanged;
         }
 
@@ -125,7 +129,7 @@ namespace Maple.ImGui.Backends.GameUI
         {
             const float comboWidth = 120.0f;
             var selectedContents = attribute.SelectedContents ?? [];
-            var previewValue = string.IsNullOrWhiteSpace(attribute.ContentValue) ? "Select..." : attribute.ContentValue;
+            var previewValue = string.IsNullOrWhiteSpace(attribute.ContentValue) ? GetUiText("Switch.SelectPlaceholder") : attribute.ContentValue;
             var valueChanged = false;
             foreach (var option in selectedContents)
             {
@@ -138,8 +142,10 @@ namespace Maple.ImGui.Backends.GameUI
 
             CenterSwitchEditorControl(comboWidth);
             ImGuiApi.SetNextItemWidth(comboWidth);
+            PushUnifiedInteractiveStyle();
             if (!ImGuiApi.BeginCombo("##SelectContentValue", previewValue))
             {
+                PopUnifiedInteractiveStyle();
                 return false;
             }
 
@@ -161,6 +167,7 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             ImGuiApi.EndCombo();
+            PopUnifiedInteractiveStyle();
             return valueChanged;
         }
 

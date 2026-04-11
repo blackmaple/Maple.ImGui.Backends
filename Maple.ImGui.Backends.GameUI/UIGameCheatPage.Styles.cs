@@ -14,6 +14,8 @@ namespace Maple.ImGui.Backends.GameUI
         private static readonly Vector2 PopupDialogPadding = new(18.0f, 18.0f);
         private static readonly Vector4 PopupDialogWindowBg = new(0.10f, 0.10f, 0.11f, 0.98f);
         private static readonly Vector4 PopupDialogBorder = new(1f, 1f, 1f, 0.08f);
+        private static readonly Vector4 PopupDialogDimBg = new(0f, 0f, 0f, 0f);
+        private const float TooltipMinWidth = 280.0f;
 
         private const float OverlayDialogBorderSize = 1.0f;
         private const float OverlayDialogChildRounding = 16.0f;
@@ -32,8 +34,18 @@ namespace Maple.ImGui.Backends.GameUI
 
         private const float EditorFrameBorderSize = 1.0f;
         private static readonly Vector2 EditorFramePadding = new(12.0f, 5.0f);
+        private static readonly Vector2 ToolbarSearchFramePadding = new(12.0f, 9.0f);
         private static readonly Vector4 EditorFrameBg = new(0.13f, 0.14f, 0.17f, 1.0f);
+        private static readonly Vector4 EditorFrameBgHovered = new(0.16f, 0.17f, 0.20f, 1.0f);
+        private static readonly Vector4 EditorFrameBgActive = new(0.18f, 0.19f, 0.22f, 1.0f);
         private static readonly Vector4 EditorFrameBorder = new(1f, 1f, 1f, 0.10f);
+        private static readonly Vector4 EditorButtonBg = new(0.18f, 0.19f, 0.22f, 1.0f);
+        private static readonly Vector4 EditorButtonBgHovered = new(0.24f, 0.25f, 0.29f, 1.0f);
+        private static readonly Vector4 EditorButtonBgActive = new(0.16f, 0.17f, 0.21f, 1.0f);
+        private static readonly Vector4 EditorHeaderBg = new(0.18f, 0.19f, 0.22f, 1.0f);
+        private static readonly Vector4 EditorHeaderBgHovered = new(0.24f, 0.25f, 0.29f, 1.0f);
+        private static readonly Vector4 EditorHeaderBgActive = new(0.16f, 0.17f, 0.21f, 1.0f);
+        private static readonly Vector4 EditorCheckMark = new(0.24f, 0.72f, 0.38f, 0.95f);
 
         private const float StepButtonWidth = 30.0f;
         private const float StepButtonSpacing = 6.0f;
@@ -64,12 +76,19 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, PopupDialogBorderSize);
             ImGuiApi.PushStyleColor(ImGuiCol.WindowBg, PopupDialogWindowBg);
             ImGuiApi.PushStyleColor(ImGuiCol.Border, PopupDialogBorder);
+            ImGuiApi.PushStyleColor(ImGuiCol.ModalWindowDimBg, PopupDialogDimBg);
         }
 
         private static void PopPopupDialogStyle()
         {
-            ImGuiApi.PopStyleColor(2);
+            ImGuiApi.PopStyleColor(3);
             ImGuiApi.PopStyleVar(3);
+        }
+
+        private static void BeginStandardTooltip()
+        {
+            ImGuiApi.SetNextWindowSizeConstraints(new Vector2(TooltipMinWidth, 0.0f), new Vector2(float.MaxValue, float.MaxValue));
+            ImGuiApi.BeginTooltip();
         }
 
         private void PushOverlayDialogStyle()
@@ -97,12 +116,82 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameBorderSize, EditorFrameBorderSize);
             ImGuiApi.PushStyleVar(ImGuiStyleVar.FramePadding, EditorFramePadding);
             ImGuiApi.PushStyleColor(ImGuiCol.FrameBg, EditorFrameBg);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgHovered, EditorFrameBgHovered);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgActive, EditorFrameBgActive);
             ImGuiApi.PushStyleColor(ImGuiCol.Border, EditorFrameBorder);
         }
 
         private static void PopEditorInputStyle()
         {
-            ImGuiApi.PopStyleColor(2);
+            ImGuiApi.PopStyleColor(4);
+            ImGuiApi.PopStyleVar(2);
+        }
+
+        private static void PushUnifiedInteractiveStyle()
+        {
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameBorderSize, EditorFrameBorderSize);
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FramePadding, EditorFramePadding);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBg, EditorFrameBg);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgHovered, EditorFrameBgHovered);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgActive, EditorFrameBgActive);
+            ImGuiApi.PushStyleColor(ImGuiCol.Border, EditorFrameBorder);
+            ImGuiApi.PushStyleColor(ImGuiCol.Button, EditorButtonBg);
+            ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, EditorButtonBgHovered);
+            ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, EditorButtonBgActive);
+            ImGuiApi.PushStyleColor(ImGuiCol.Header, EditorHeaderBg);
+            ImGuiApi.PushStyleColor(ImGuiCol.HeaderHovered, EditorHeaderBgHovered);
+            ImGuiApi.PushStyleColor(ImGuiCol.HeaderActive, EditorHeaderBgActive);
+            ImGuiApi.PushStyleColor(ImGuiCol.CheckMark, EditorCheckMark);
+        }
+
+        private static void PopUnifiedInteractiveStyle()
+        {
+            ImGuiApi.PopStyleColor(11);
+            ImGuiApi.PopStyleVar(2);
+        }
+
+        private static void PushToolbarSearchInputStyle()
+        {
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameBorderSize, EditorFrameBorderSize);
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FramePadding, ToolbarSearchFramePadding);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBg, EditorFrameBg);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgHovered, EditorFrameBgHovered);
+            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgActive, EditorFrameBgActive);
+            ImGuiApi.PushStyleColor(ImGuiCol.Border, EditorFrameBorder);
+        }
+
+        private static void PopToolbarSearchInputStyle()
+        {
+            ImGuiApi.PopStyleColor(4);
+            ImGuiApi.PopStyleVar(2);
+        }
+
+        private static void PushIconButtonStyle(Vector4 buttonColor, Vector4 hoveredColor, Vector4 activeColor, float rounding = SharedButtonCornerRounding)
+        {
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, rounding);
+            ImGuiApi.PushStyleColor(ImGuiCol.Button, buttonColor);
+            ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, hoveredColor);
+            ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, activeColor);
+        }
+
+        private static void PopIconButtonStyle()
+        {
+            ImGuiApi.PopStyleColor(3);
+            ImGuiApi.PopStyleVar();
+        }
+
+        private static void PushDialogActionButtonStyle()
+        {
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, 10.0f);
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(14.0f, 8.0f));
+            ImGuiApi.PushStyleColor(ImGuiCol.Button, EditorButtonBg);
+            ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, EditorButtonBgHovered);
+            ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, EditorButtonBgActive);
+        }
+
+        private static void PopDialogActionButtonStyle()
+        {
+            ImGuiApi.PopStyleColor(3);
             ImGuiApi.PopStyleVar(2);
         }
     }

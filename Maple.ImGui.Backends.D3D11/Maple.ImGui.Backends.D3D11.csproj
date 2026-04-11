@@ -1,24 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
-    <PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
-    <PackageReference Include="Maple.Hook.WinMsg" Version="0.26.403.10-rc" />
-    <PackageReference Include="Maple.RenderSpy.Graphics.D3D11" Version="0.26.401.10-rc" />
-    <PackageReference Include="Maple.RenderSpy.Graphics.DXGI" Version="0.26.401.15-rc" />
-	  <PackageReference Include="Maple.RenderSpy.Graphics" Version="0.26.401.5-rc" />
-	  <PackageReference Include="Maple.RenderSpy.Graphics.Windows" Version="0.26.401.5-rc" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
+		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
+		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.403.10-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.D3D11" Version="0.26.409.1-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.DXGI" Version="0.26.409.1-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics" Version="0.26.401.5-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.Windows" Version="0.26.401.5-rc" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Maple.ImGui.Backends\Maple.ImGui.Backends.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Maple.ImGui.Backends.Windows\Maple.ImGui.Backends.Windows.csproj" />
+	</ItemGroup>
 
 </Project>

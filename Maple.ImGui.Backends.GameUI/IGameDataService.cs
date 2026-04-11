@@ -3,7 +3,7 @@ using Maple.MonoGameAssistant.Model;
 
 namespace Maple.ImGui.Backends.GameUI
 {
-    public interface IGameCheatService
+    public interface IGameDataService
     {
         Task<MonoResultDTO<GameSessionInfoDTO>> GetGameSessionInfoAsync();
         Task<MonoResultDTO<GameSessionInfoDTO>> LoadResourceAsync(GameSessionInfoDTO gameSessionInfo);

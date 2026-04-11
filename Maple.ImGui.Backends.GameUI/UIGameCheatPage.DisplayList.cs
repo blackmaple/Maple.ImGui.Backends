@@ -44,11 +44,8 @@ namespace Maple.ImGui.Backends.GameUI
                 ? MathF.Max(112.0f, items.Cast<GameSwitchDisplayDTO>().Select(GetSwitchDisplayEditorCardHeight).DefaultIfEmpty(112.0f).Max())
                 : 112.0f;
             var cardHeight = gridCardHeight;
-            var columns = Math.Max(1, (int)((childSize.X + cardSpacing) / (cardWidth + cardSpacing)));
             var rowHeight = cardHeight + cardSpacing;
-            var usedWidth = (columns * cardWidth) + ((columns - 1) * cardSpacing);
-            var startOffsetX = MathF.Max(0.0f, (childSize.X - usedWidth) * 0.5f);
-            var rowCount = (items.Length + columns - 1) / columns;
+            var (columns, rowCount, startOffsetX) = GetCenteredGridLayout(childSize.X, childSize.Y, cardWidth, cardSpacing, rowHeight, items.Length);
             var clipper = new ImGuiListClipper();
             clipper.Begin(rowCount, rowHeight);
             while (clipper.Step())
@@ -84,6 +81,59 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.PopStyleColor();
         }
 
+        private void RenderMonsterDisplayCards(GameMonsterDisplayDTO[] items)
+        {
+            const float cardSpacing = 12.0f;
+
+            var childSize = ImGuiApi.GetContentRegionAvail();
+            var gridWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
+            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
+            if (!ImGuiApi.BeginChild("##MonsterGridCards", childSize, ImGuiChildFlags.None, gridWindowFlags))
+            {
+                ImGuiApi.EndChild();
+                ImGuiApi.PopStyleColor();
+                return;
+            }
+
+            var cardWidth = GetInventoryCardWidth(childSize.X);
+            const float cardHeight = 112.0f;
+            var rowHeight = cardHeight + cardSpacing;
+            var (columns, rowCount, startOffsetX) = GetCenteredGridLayout(childSize.X, childSize.Y, cardWidth, cardSpacing, rowHeight, items.Length);
+            var clipper = new ImGuiListClipper();
+            clipper.Begin(rowCount, rowHeight);
+            while (clipper.Step())
+            {
+                for (var row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+                {
+                    ImGuiApi.SetCursorPosX(ImGuiApi.GetCursorPosX() + startOffsetX);
+                    for (var column = 0; column < columns; column++)
+                    {
+                        var itemIndex = (row * columns) + column;
+                        if (itemIndex >= items.Length)
+                        {
+                            break;
+                        }
+
+                        if (column > 0)
+                        {
+                            ImGuiApi.SameLine(0.0f, cardSpacing);
+                        }
+
+                        RenderInventoryDisplayCard(items[itemIndex], itemIndex, new Vector2(cardWidth, cardHeight));
+                    }
+
+                    if (row < rowCount - 1)
+                    {
+                        ImGuiApi.Dummy(new Vector2(0.0f, cardSpacing));
+                    }
+                }
+            }
+
+            clipper.End();
+            ImGuiApi.EndChild();
+            ImGuiApi.PopStyleColor();
+        }
+
         private void RenderInventoryDisplayCards(GameInventoryDisplayDTO[] items)
         {
             const float inventoryCardSpacing = 12.0f;
@@ -100,18 +150,18 @@ namespace Maple.ImGui.Backends.GameUI
 
             var inventoryCardWidth = GetInventoryCardWidth(childSize.X);
             const float inventoryCardHeight = 112.0f;
-            var columns = Math.Max(1, (int)((childSize.X + inventoryCardSpacing) / (inventoryCardWidth + inventoryCardSpacing)));
             var rowHeight = inventoryCardHeight + inventoryCardSpacing;
-            if (LastInventoryGridColumns > 0 && LastInventoryGridColumns != columns)
+            var estimatedColumns = GetGridColumns(childSize.X, inventoryCardWidth, inventoryCardSpacing);
+            if (LastInventoryGridColumns > 0 && LastInventoryGridColumns != estimatedColumns)
             {
                 var currentScrollY = ImGuiApi.GetScrollY();
                 var currentTopRow = currentScrollY / rowHeight;
                 var currentTopItemIndex = currentTopRow * LastInventoryGridColumns;
-                var nextTopRow = currentTopItemIndex / columns;
+                var nextTopRow = currentTopItemIndex / estimatedColumns;
                 PendingInventoryGridScrollY = nextTopRow * rowHeight;
             }
 
-            LastInventoryGridColumns = columns;
+            LastInventoryGridColumns = estimatedColumns;
 
             if (PendingInventoryGridScrollY >= 0.0f)
             {
@@ -119,9 +169,7 @@ namespace Maple.ImGui.Backends.GameUI
                 PendingInventoryGridScrollY = -1.0f;
             }
 
-            var usedWidth = (columns * inventoryCardWidth) + ((columns - 1) * inventoryCardSpacing);
-            var startOffsetX = MathF.Max(0.0f, (childSize.X - usedWidth) * 0.5f);
-            var rowCount = (items.Length + columns - 1) / columns;
+            var (columns, rowCount, startOffsetX) = GetCenteredGridLayout(childSize.X, childSize.Y, inventoryCardWidth, inventoryCardSpacing, rowHeight, items.Length);
             var clipper = new ImGuiListClipper();
             clipper.Begin(rowCount, rowHeight);
             while (clipper.Step())
@@ -162,10 +210,11 @@ namespace Maple.ImGui.Backends.GameUI
         {
             var allowCardInteraction = !IsEditDialogBlockingInput();
             const float cardControlMargin = 6.0f;
-            const float imageColumnWidth = 62.0f;
+       //     const float imageColumnWidth = 62.0f;
             const float textStartX = 76.0f;
             var switchDisplay = item as GameSwitchDisplayDTO;
             var objectDisplay = item as GameObjectDisplayDTO;
+            var monsterDisplay = item as GameMonsterDisplayDTO;
             var textColumnWidth = switchDisplay is null
                 ? MathF.Max(1.0f, cardSize.X - textStartX - 50.0f)
                 : MathF.Max(1.0f, cardSize.X - textStartX - 12.0f);
@@ -183,19 +232,42 @@ namespace Maple.ImGui.Backends.GameUI
             var cardPos = ImGuiApi.GetWindowPos();
             var isCardHovered = allowCardInteraction && ImGuiApi.IsMouseHoveringRect(cardPos, cardPos + cardSize);
             var cardCategory = switchDisplay is null
-                ? (string.IsNullOrWhiteSpace(objectDisplay?.DisplayCategory) ? "Inventory" : objectDisplay.DisplayCategory)
-                : "Misc";
+                ? (string.IsNullOrWhiteSpace(objectDisplay?.DisplayCategory) ? GetUiText("Text.Inventory") : objectDisplay.DisplayCategory)
+                : GetUiText("Text.Misc");
             var visibleCardCategory = switchDisplay is null ? cardCategory : string.Empty;
             var thumbnailSize = new Vector2(48.0f, 48.0f);
             var thumbnailMin = cardPos + new Vector2(14.0f, 14.0f);
-            DrawThumbnailPreview(thumbnailMin, thumbnailSize);
+            RenderCardThumbnail(thumbnailMin, thumbnailSize, switchDisplay is null ? objectDisplay?.DisplayCategory : cardCategory, item.ObjectId);
 
-            if (switchDisplay is null)
+            if (monsterDisplay is not null)
             {
-                ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, 6.0f);
-                ImGuiApi.PushStyleColor(ImGuiCol.Button, new Vector4(0.92f, 0.40f, 0.02f, 0.18f));
-                ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.92f, 0.40f, 0.02f, 0.35f));
-                ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
+                var addButtonPosition = new Vector2(cardSize.X - CardActionButtonSize - cardControlMargin, cardSize.Y - CardActionButtonSize - cardControlMargin);
+                var infoButtonPosition = addButtonPosition - new Vector2(CardActionButtonSize + CardActionButtonSpacing, 0.0f);
+
+                PushIconButtonStyle(
+                    new Vector4(0.92f, 0.40f, 0.02f, 0.18f),
+                    new Vector4(0.92f, 0.40f, 0.02f, 0.35f),
+                    new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
+                ImGuiApi.SetCursorPos(infoButtonPosition);
+                var infoClicked = ImGuiApi.Button($"##MonsterInfo_{item.ObjectId}_{index}", new Vector2(CardActionButtonSize, CardActionButtonSize));
+                DrawActionButtonIcon();
+                PopIconButtonStyle();
+                if (infoClicked)
+                {
+                    HandleMonsterInfoButtonClick(monsterDisplay);
+                }
+
+                if (RenderSkillActionButton($"##MonsterAdd_{item.ObjectId}_{index}", addButtonPosition, true, !_monsterAddRequest.IsRunning))
+                {
+                    HandleMonsterAddButtonClick(monsterDisplay);
+                }
+            }
+            else if (switchDisplay is null)
+            {
+                PushIconButtonStyle(
+                    new Vector4(0.92f, 0.40f, 0.02f, 0.18f),
+                    new Vector4(0.92f, 0.40f, 0.02f, 0.35f),
+                    new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
                 ImGuiApi.SetCursorPos(new Vector2(cardSize.X - 30.0f - cardControlMargin, cardSize.Y - 30.0f - cardControlMargin));
                 if (ImGuiApi.Button($"##InventoryGridEdit_{item.ObjectId}_{index}", new Vector2(30.0f, 30.0f)))
                 {
@@ -203,8 +275,7 @@ namespace Maple.ImGui.Backends.GameUI
                 }
 
                 DrawActionButtonIcon();
-                ImGuiApi.PopStyleColor(3);
-                ImGuiApi.PopStyleVar();
+                PopIconButtonStyle();
             }
             else
             {
@@ -231,13 +302,13 @@ namespace Maple.ImGui.Backends.GameUI
                 var tooltipDesc = GetPlainText(item.DisplayDesc);
                 if (string.IsNullOrWhiteSpace(tooltipDesc))
                 {
-                    tooltipDesc = "Empty";
+                    tooltipDesc = GetUiText("Dialog.Text.Empty");
                 }
 
                 ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
                 ImGuiApi.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.09f, 0.10f, 0.12f, 0.98f));
                 ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(0.20f, 0.62f, 0.26f, 0.92f));
-                ImGuiApi.BeginTooltip();
+                BeginStandardTooltip();
                 ImGuiApi.PushTextWrapPos(ImGuiApi.GetFontSize() * 24.0f);
                 ImGuiApi.TextUnformatted(cardCategory);
                 ImGuiApi.Separator();
@@ -399,14 +470,40 @@ namespace Maple.ImGui.Backends.GameUI
             return ellipsis;
         }
 
+        private static int GetGridColumns(float availableWidth, float cardWidth, float cardSpacing)
+        {
+            return Math.Max(1, (int)((availableWidth + cardSpacing) / (cardWidth + cardSpacing)));
+        }
+
+        private static (int Columns, int RowCount, float StartOffsetX) GetCenteredGridLayout(float availableWidth, float availableHeight, float cardWidth, float cardSpacing, float rowHeight, int itemCount)
+        {
+            var columns = GetGridColumns(availableWidth, cardWidth, cardSpacing);
+            var rowCount = (itemCount + columns - 1) / columns;
+            if ((rowCount * rowHeight) <= availableHeight)
+            {
+                return (columns, rowCount, GetCenteredGridStartOffset(availableWidth, cardWidth, cardSpacing, columns));
+            }
+
+            var effectiveWidth = MathF.Max(1.0f, availableWidth - ImGuiApi.GetStyle().ScrollbarSize);
+            columns = GetGridColumns(effectiveWidth, cardWidth, cardSpacing);
+            rowCount = (itemCount + columns - 1) / columns;
+            return (columns, rowCount, GetCenteredGridStartOffset(effectiveWidth, cardWidth, cardSpacing, columns));
+        }
+
+        private static float GetCenteredGridStartOffset(float availableWidth, float cardWidth, float cardSpacing, int columns)
+        {
+            var usedWidth = (columns * cardWidth) + ((columns - 1) * cardSpacing);
+            return MathF.Max(0.0f, (availableWidth - usedWidth) * 0.5f);
+        }
+
         private bool IsEditDialogBlockingInput()
         {
-            return (!AllowDialogContentInput && (
+            return IsAnyPopupDialogOpen()
+                || (!AllowDialogContentInput && (
                     ShowCharacterStatusDialog
                     || ShowCharacterSkillDialog
-                    || ShowCharacterSkillSelectorDialog))
-                || PendingOpenCurrencyEditPopup
-                || PendingOpenInventoryEditPopup
+                    || ShowCharacterSkillSelectorDialog
+                    || ShowMonsterInfoDialog))
                 || EditingCurrency is not null
                 || EditingInventory is not null;
         }
@@ -452,12 +549,7 @@ namespace Maple.ImGui.Backends.GameUI
 
             ImGuiApi.SetCursorPosX(ImGuiApi.GetCursorPosX() + startX);
             ImGuiApi.SetCursorPosY(ImGuiApi.GetCursorPosY() + 2.0f);
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1.0f);
-            ImGuiApi.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.13f, 0.14f, 0.17f, 1.0f));
-            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgHovered, new Vector4(0.16f, 0.17f, 0.20f, 1.0f));
-            ImGuiApi.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(0.18f, 0.19f, 0.22f, 1.0f));
-            ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(1f, 1f, 1f, 0.10f));
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(12.0f, 9.0f));
+            PushToolbarSearchInputStyle();
             RenderSearchInput($"##{tabName}_SearchInput", searchState, inputWidth);
             var inputMin = ImGuiApi.GetItemRectMin();
             var inputMax = ImGuiApi.GetItemRectMax();
@@ -474,17 +566,19 @@ namespace Maple.ImGui.Backends.GameUI
                     1.6f);
             }
 
-            ImGuiApi.PopStyleColor(4);
-            ImGuiApi.PopStyleVar(2);
+            PopToolbarSearchInputStyle();
             ImGuiApi.SameLine();
+            PushIconButtonStyle(EditorButtonBg, EditorButtonBgHovered, EditorButtonBgActive);
             if (ImGuiApi.Button($"##Search_{tabName}", new Vector2(ToolbarIconButtonSize, ToolbarIconButtonSize)))
             {
                 searchState.AppliedText = searchState.InputText;
             }
 
             DrawSearchButtonIcon();
+            PopIconButtonStyle();
 
             ImGuiApi.SameLine();
+            PushIconButtonStyle(EditorButtonBg, EditorButtonBgHovered, EditorButtonBgActive);
             if (ImGuiApi.Button($"##Reload_{tabName}", new Vector2(ToolbarIconButtonSize, ToolbarIconButtonSize)) && GameSessionInfo is not null && !_sessionCollectionsRequest.IsRunning)
             {
                 searchState.InputText = string.Empty;
@@ -494,6 +588,7 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             DrawReloadButtonIcon();
+            PopIconButtonStyle();
         }
 
         private void RenderDisplayCards<TDisplay>(string tabName, TDisplay[] items) where TDisplay : GameDisplayDTO
@@ -557,7 +652,6 @@ namespace Maple.ImGui.Backends.GameUI
             var windowPos = ImGuiApi.GetWindowPos();
             var iconMin = windowPos + new Vector2(14.0f, 14.0f);
             var compactThumbnailSize = new Vector2(48.0f, 48.0f);
-            DrawThumbnailPreview(iconMin, compactThumbnailSize);
 
             const float actionButtonSize = 30.0f;
             const float actionButtonSpacing = 8.0f;
@@ -568,8 +662,10 @@ namespace Maple.ImGui.Backends.GameUI
             var textWidth = MathF.Max(1.0f, textRightBoundary - textStartX - 12.0f);
             var cardCategory = switchDisplay is null
                 ? (string.IsNullOrWhiteSpace(objectDisplay?.DisplayCategory) ? tabName : objectDisplay.DisplayCategory)
-                : "Misc";
+                : GetUiText("Text.Misc");
             var visibleCardCategory = switchDisplay is null ? cardCategory : string.Empty;
+
+            RenderCardThumbnail(iconMin, compactThumbnailSize, switchDisplay is null ? objectDisplay?.DisplayCategory : GetUiText("Text.Misc"), item.ObjectId);
 
             RenderInventoryCardTextBlock(visibleCardCategory, item.DisplayName ?? string.Empty, windowPos, textStartX, textWidth, switchDisplay is not null);
 
@@ -595,13 +691,13 @@ namespace Maple.ImGui.Backends.GameUI
                     var tooltipDesc = GetPlainText(item.DisplayDesc);
                     if (string.IsNullOrWhiteSpace(tooltipDesc))
                     {
-                        tooltipDesc = "Empty";
+                        tooltipDesc = GetUiText("Dialog.Text.Empty");
                     }
 
                     ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
                     ImGuiApi.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.09f, 0.10f, 0.12f, 0.98f));
                     ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(0.20f, 0.62f, 0.26f, 0.92f));
-                    ImGuiApi.BeginTooltip();
+                    BeginStandardTooltip();
                     ImGuiApi.PushTextWrapPos(ImGuiApi.GetFontSize() * 24.0f);
                     ImGuiApi.TextUnformatted(cardCategory);
                     ImGuiApi.Separator();
@@ -631,10 +727,10 @@ namespace Maple.ImGui.Backends.GameUI
 
             if (characterDisplay is not null)
             {
-                ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, 6.0f);
-                ImGuiApi.PushStyleColor(ImGuiCol.Button, new Vector4(0.16f, 0.34f, 0.78f, 0.20f));
-                ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.20f, 0.42f, 0.92f, 0.36f));
-                ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.14f, 0.30f, 0.78f, 0.52f));
+                PushIconButtonStyle(
+                    new Vector4(0.16f, 0.34f, 0.78f, 0.20f),
+                    new Vector4(0.20f, 0.42f, 0.92f, 0.36f),
+                    new Vector4(0.14f, 0.30f, 0.78f, 0.52f));
                 ImGuiApi.SetCursorPos(skillButtonPosition);
                 if (ImGuiApi.Button($"##Skill_{tabName}_{item.ObjectId}_{index}", new Vector2(actionButtonSize, actionButtonSize)))
                 {
@@ -642,14 +738,13 @@ namespace Maple.ImGui.Backends.GameUI
                 }
 
                 DrawSkillButtonIcon();
-                ImGuiApi.PopStyleColor(3);
-                ImGuiApi.PopStyleVar();
+                PopIconButtonStyle();
             }
 
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, 6.0f);
-            ImGuiApi.PushStyleColor(ImGuiCol.Button, new Vector4(0.92f, 0.40f, 0.02f, 0.18f));
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.92f, 0.40f, 0.02f, 0.35f));
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
+            PushIconButtonStyle(
+                new Vector4(0.92f, 0.40f, 0.02f, 0.18f),
+                new Vector4(0.92f, 0.40f, 0.02f, 0.35f),
+                new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
             ImGuiApi.SetCursorPos(actionButtonPosition);
             if (ImGuiApi.Button($"##Action_{tabName}_{item.ObjectId}_{index}", new Vector2(actionButtonSize, actionButtonSize)))
             {
@@ -657,21 +752,20 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             DrawActionButtonIcon();
-            ImGuiApi.PopStyleColor(3);
-            ImGuiApi.PopStyleVar();
+            PopIconButtonStyle();
 
             if (allowCardInteraction && (ImGuiApi.IsItemHovered() || ImGuiApi.IsMouseHoveringRect(windowPos, windowPos + new Vector2(cardWidth, cardHeight))))
             {
                 var tooltipDesc = GetPlainText(item.DisplayDesc);
                 if (string.IsNullOrWhiteSpace(tooltipDesc))
                 {
-                    tooltipDesc = "Empty";
+                    tooltipDesc = GetUiText("Dialog.Text.Empty");
                 }
 
                 ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
                 ImGuiApi.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.09f, 0.10f, 0.12f, 0.98f));
                 ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(0.20f, 0.62f, 0.26f, 0.92f));
-                ImGuiApi.BeginTooltip();
+                BeginStandardTooltip();
                 ImGuiApi.PushTextWrapPos(ImGuiApi.GetFontSize() * 24.0f);
                 ImGuiApi.TextUnformatted(cardCategory);
                 ImGuiApi.Separator();

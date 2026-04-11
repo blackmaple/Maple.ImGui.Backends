@@ -4,7 +4,7 @@ using Maple.MonoGameAssistant.Model;
 
 namespace Maple.ImGui.Backends.GameUI
 {
-    internal sealed class GameCheatService_Http(GameHttpClientService service) : IGameCheatService
+    internal sealed class GameCheatService_Http(GameHttpClientService service) : IGameDataService
     {
         public Task<MonoResultDTO<GameSessionInfoDTO>> GetGameSessionInfoAsync() => service.GetGameSessionInfoAsync();
         public Task<MonoResultDTO<GameSessionInfoDTO>> LoadResourceAsync(GameSessionInfoDTO gameSessionInfo) => service.LoadResourceAsync(gameSessionInfo);

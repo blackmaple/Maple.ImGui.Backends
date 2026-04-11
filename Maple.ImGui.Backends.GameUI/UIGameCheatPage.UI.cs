@@ -34,15 +34,27 @@ namespace Maple.ImGui.Backends.GameUI
         private const float EditDialogWidth = 420.0f;
         private const float EditDialogThumbnailWidth = 58.0f;
         private const float EditDialogThumbnailHeight = 72.0f;
-        private const float UiScaleMin = 0.75f;
-        private const float UiScaleMax = 2.00f;
         private static readonly Vector4 LauncherButtonColor = new(0.00f, 0.76f, 0.46f, 0.50f);
         private static readonly Vector4 LauncherButtonHoveredColor = new(0.00f, 0.76f, 0.46f, 0.68f);
         private static readonly Vector4 LauncherButtonActiveColor = new(0.00f, 0.76f, 0.46f, 0.82f);
+        private bool ShowGameSessionHelpDialog;
+
+        private bool IsAnyPopupDialogOpen()
+        {
+            return ShowGameSessionHelpDialog
+                || EditingCurrency is not null
+                || EditingInventory is not null
+                || PendingCharacterSkillAction is not null
+                || PendingMonsterAddAction is not null;
+        }
 
         private void UpdateMouseCursorVisibility()
         {
-            ImGuiApi.GetIO().MouseDrawCursor = LauncherVisible || ShowSessionWindow;
+            var b = LauncherVisible || ShowSessionWindow;
+            var io = ImGuiApi.GetIO();
+            io.MouseDrawCursor = b;
+            io.WantCaptureKeyboard = b;
+            io.WantCaptureMouse = b;
         }
 
         private void ApplyUiScale()
@@ -62,6 +74,11 @@ namespace Maple.ImGui.Backends.GameUI
             if (!ShowSessionWindow)
             {
                 return;
+            }
+
+            if (SelectedSessionTab == SessionTab.Skill)
+            {
+                SelectedSessionTab = SessionTab.Currency;
             }
 
             var mainViewport = ImGuiApi.GetMainViewport();
@@ -108,11 +125,11 @@ namespace Maple.ImGui.Backends.GameUI
                 | ImGuiWindowFlags.NoCollapse
                 | ImGuiWindowFlags.NoTitleBar;
 
-            if (PendingOpenCurrencyEditPopup
-                || PendingOpenInventoryEditPopup
+            if (IsAnyPopupDialogOpen()
                 || ShowCharacterStatusDialog
                 || ShowCharacterSkillDialog
                 || ShowCharacterSkillSelectorDialog
+                || ShowMonsterInfoDialog
                 || EditingCurrency is not null
                 || EditingInventory is not null)
             {
@@ -148,25 +165,7 @@ namespace Maple.ImGui.Backends.GameUI
 
             if (_sessionCollectionsRequest.IsRunning)
             {
-                ImGuiApi.TextUnformatted("Loading display lists...");
-            }
-
-            if (PendingOpenGameSessionHelpPopup)
-            {
-                ImGuiApi.OpenPopup(GameSessionHelpPopupName);
-                PendingOpenGameSessionHelpPopup = false;
-            }
-
-            if (PendingOpenCurrencyEditPopup)
-            {
-                ImGuiApi.OpenPopup(CurrencyEditPopupName);
-                PendingOpenCurrencyEditPopup = false;
-            }
-
-            if (PendingOpenInventoryEditPopup)
-            {
-                ImGuiApi.OpenPopup(InventoryEditPopupName);
-                PendingOpenInventoryEditPopup = false;
+                ImGuiApi.TextUnformatted(GetUiText("Window.Session.Loading"));
             }
 
             if (ImGuiApi.BeginChild("##SessionWindowContent", contentSize, ImGuiChildFlags.AlwaysUseWindowPadding))
@@ -183,6 +182,7 @@ namespace Maple.ImGui.Backends.GameUI
             RenderGameSessionInfoHelpDialog();
             RenderCurrencyEditDialog();
             RenderInventoryEditDialog();
+            RenderMonsterAddConfirmDialog();
 
             ImGuiApi.End();
             ImGuiApi.PopStyleColor(12);
@@ -200,22 +200,23 @@ namespace Maple.ImGui.Backends.GameUI
             switch (SelectedSessionTab)
             {
                 case SessionTab.Currency:
-                    RenderDisplayTabContent("Currency", SessionCollections.Currencies, CurrencySearch);
+                    RenderDisplayTabContent(GetUiText("Tab.Currency"), SessionCollections.Currencies, CurrencySearch);
                     break;
                 case SessionTab.Inventory:
-                    RenderDisplayTabContent("Inventory", SessionCollections.Inventories, InventorySearch);
+                    RenderDisplayTabContent(GetUiText("Tab.Inventory"), SessionCollections.Inventories, InventorySearch);
                     break;
                 case SessionTab.Character:
-                    RenderDisplayTabContent("Character", SessionCollections.Characters, CharacterSearch);
+                    RenderDisplayTabContent(GetUiText("Tab.Character"), SessionCollections.Characters, CharacterSearch);
                     break;
                 case SessionTab.Monster:
-                    RenderDisplayTabContent("Monster", SessionCollections.Monsters, MonsterSearch);
+                    RenderTabToolbar(GetUiText("Tab.Monster"), MonsterSearch);
+                    RenderMonsterDisplayCards(SortDisplays(FilterDisplays(SessionCollections.Monsters, MonsterSearch.AppliedText)));
                     break;
                 case SessionTab.Skill:
-                    RenderDisplayTabContent("Skill", SessionCollections.Skills, SkillSearch);
+                    RenderDisplayTabContent(GetUiText("Tab.Skill"), SessionCollections.Skills, SkillSearch);
                     break;
                 case SessionTab.Switch:
-                    RenderDisplayTabContent("Misc", SessionCollections.Switches, SwitchSearch);
+                    RenderDisplayTabContent(GetUiText("Tab.Misc"), SessionCollections.Switches, SwitchSearch);
                     break;
             }
         }

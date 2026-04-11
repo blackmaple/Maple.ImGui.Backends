@@ -5,48 +5,39 @@ using Maple.Hook.WinMsg;
 using Maple.ImGui.Backends;
 using Maple.RenderSpy.Graphics.D3D9.COM_Direct3DDevice9;
 using Maple.RenderSpy.Graphics.Windows.COM;
-
+using Maple.UnmanagedExtensions;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.D3D9
 {
     public sealed class D3D9BackendImp(
         ImGuiContextPtr guiContextPtr,
         COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> D3D9DevicePtr,
-       
-        WinMsgHookItem winMsgHookItem,
-        ImGuiController controller) : ImGuiRaiseRenderBase(controller)
+        ImGuiBackendBridgeCollection controller,
+        IImGuiUIView view) : ImGuiBackendImpBase(controller, view)
 
     {
         ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
         COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> ID3D9DevicePtr { get; set; } = D3D9DevicePtr;
-       
-        WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
 
-        public unsafe static D3D9BackendImp CreateImp(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> pDevice, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
+
+        public unsafe static D3D9BackendImp CreateImp(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> pDevice, D3D9BackendHostedService hostedService)
         {
             var hWnd = pDevice.GetFocusWindow();
             if (hWnd == nint.Zero)
             {
                 return ImGuiBackendException.Throw<D3D9BackendImp>("GetFocusWindow IS NULL");
             }
- 
-      
-            var imguiContext = Hexa.NET.ImGui.ImGui.CreateContext();
+
+
+            var imguiContext = ImGuiApi.CreateContext();
+            ImGuiApi.SetCurrentContext(imguiContext);
             ImGuiImplWin32.SetCurrentContext(imguiContext);
-            if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
+            if (false == hostedService.InitPlatform(imguiContext, hWnd))
             {
-                
-                return ImGuiBackendException.Throw<D3D9BackendImp>($"ImGuiImplWin32 INIT ERROR");
+                return ImGuiBackendException.Throw<D3D9BackendImp>($"InitPlatform INIT ERROR");
             }
-            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f);
-
-            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
-            winMsgHookItem.SyncCallback += (hWnd, uMsg, w, l, hookItem) =>
-            {
-                return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
-            };
-            winMsgHookItem.EnabledSyncCallback = true;
-            winMsgHookItem.Start();
-
 
             var pID3D9DevicePtr = new IDirect3DDevice9Ptr(pDevice.AsPointer<IDirect3DDevice9Imp, IDirect3DDevice9>());
             ImGuiImplD3D9.SetCurrentContext(imguiContext);
@@ -54,7 +45,7 @@ namespace Maple.ImGui.Backends.D3D9
             {
                 return ImGuiBackendException.Throw<D3D9BackendImp>($"ImGuiImplD3D9 INIT ERROR");
             }
-            return new D3D9BackendImp(imguiContext, pDevice,  winMsgHookItem, controller);
+            return new D3D9BackendImp(imguiContext, pDevice, hostedService.BridgeCollection, hostedService.View);
         }
 
         protected override void Starting(nint context)
@@ -64,7 +55,7 @@ namespace Maple.ImGui.Backends.D3D9
         }
         protected override void Start(nint context)
         {
-            this.Controller.CustomRender?.RaiseRender();
+            this.View.RaiseRender();
         }
         protected override void Started(nint context)
         {
@@ -87,13 +78,12 @@ namespace Maple.ImGui.Backends.D3D9
                 ImGuiImplD3D9.Shutdown();
                 Hexa.NET.ImGui.ImGui.DestroyContext(imguiContext);
             }
-            this.WinMsgHookItem.Dispose();
         }
 
 
         public override void Resetting(nint context)
         {
-          
+
         }
         public override void Reset(nint context)
         {
@@ -103,5 +93,8 @@ namespace Maple.ImGui.Backends.D3D9
         {
             ImGuiImplD3D9.CreateDeviceObjects();
         }
+
+
+       
     }
 }

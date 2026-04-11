@@ -14,7 +14,7 @@ namespace Maple.ImGui.Backends.GameUI
         {
             if (GameSessionInfo is null)
             {
-                AddToast("Game session is not ready.", UiToastKind.Error);
+                AddToast(GetUiText("Toast.Session.NotReady"), UiToastKind.Error);
                 return;
             }
 
@@ -30,7 +30,7 @@ namespace Maple.ImGui.Backends.GameUI
                     _characterStatusRequest.TryStart(() => GetCharacterStatusDialogStateAsync(character));
                     break;
                 default:
-                    AddToast($"Edit {item.DisplayName ?? item.ObjectId ?? "Item"} not implemented.", UiToastKind.Error);
+                    AddToast(GetUiText("Toast.Edit.NotImplemented", item.DisplayName ?? item.ObjectId ?? "Item"), UiToastKind.Error);
                     break;
             }
         }
@@ -39,7 +39,7 @@ namespace Maple.ImGui.Backends.GameUI
         {
             if (GameSessionInfo is null)
             {
-                AddToast("Game session is not ready.", UiToastKind.Error);
+                AddToast(GetUiText("Toast.Session.NotReady"), UiToastKind.Error);
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace Maple.ImGui.Backends.GameUI
                 skill.DisplayCategory,
                 skill.ObjectId ?? string.Empty,
                 string.Empty,
-                skill.DisplayName ?? skill.ObjectId ?? "Skill",
+                skill.DisplayName ?? skill.ObjectId ?? GetUiText("Text.Skill"),
                 false);
         }
 
@@ -85,8 +85,31 @@ namespace Maple.ImGui.Backends.GameUI
                 skill.DisplayCategory,
                 string.Empty,
                 skill.ObjectId ?? string.Empty,
-                skill.DisplayName ?? skill.ObjectId ?? "Skill",
+                skill.DisplayName ?? skill.ObjectId ?? GetUiText("Text.Skill"),
                 true);
+        }
+
+        private void HandleMonsterInfoButtonClick(GameMonsterDisplayDTO monster)
+        {
+            ViewingMonsterInfo = new MonsterInfoDialogState(
+                monster,
+                monster.DisplayName ?? monster.ObjectId ?? GetUiText("Text.Monster"),
+                monster.DisplayDesc ?? string.Empty);
+            ShowMonsterInfoDialog = true;
+        }
+
+        private void HandleMonsterAddButtonClick(GameMonsterDisplayDTO monster)
+        {
+            if (GameSessionInfo is null || _monsterAddRequest.IsRunning)
+            {
+                return;
+            }
+
+            PendingMonsterAddAction = new MonsterAddConfirmState(
+                monster,
+                monster.DisplayName ?? monster.ObjectId ?? GetUiText("Text.Monster"),
+                monster.DisplayDesc ?? string.Empty);
+            PendingOpenMonsterAddPopup = true;
         }
 
         private void OpenCharacterSkillActionConfirm(string? modifyCategory, string oldSkill, string newSkill, string displayName, bool isAdd)
@@ -95,25 +118,25 @@ namespace Maple.ImGui.Backends.GameUI
             PendingOpenCharacterSkillActionPopup = true;
         }
 
-        private void HandleCharacterStatusValueChanged(GameSwitchDisplayDTO attribute, string? originalContentValue, decimal originalDecimalValue, bool originalSwitchValue)
+        private void HandleCharacterStatusValueChanged(GameSwitchDisplayDTO attribute, string? originalContentValue)
         {
             if (GameSessionInfo is null || ViewingCharacterStatus is null || _characterStatusUpdateRequest.IsRunning)
             {
                 return;
             }
 
-            PendingCharacterStatusOriginalValue = CreateSwitchDisplayOriginalValueState(attribute, originalContentValue, originalDecimalValue, originalSwitchValue);
+            PendingCharacterStatusOriginalValue = CreateSwitchDisplayOriginalValueState(attribute, originalContentValue);
             _characterStatusUpdateRequest.TryStart(() => UpdateCharacterStatusDialogAsync(attribute));
         }
 
-        private void HandleSwitchDisplayValueChanged(GameSwitchDisplayDTO attribute, string? originalContentValue, decimal originalDecimalValue, bool originalSwitchValue)
+        private void HandleSwitchDisplayValueChanged(GameSwitchDisplayDTO attribute, string? originalContentValue)
         {
             if (GameSessionInfo is null || _switchDisplayUpdateRequest.IsRunning)
             {
                 return;
             }
 
-            PendingSwitchDisplayOriginalValue = CreateSwitchDisplayOriginalValueState(attribute, originalContentValue, originalDecimalValue, originalSwitchValue);
+            PendingSwitchDisplayOriginalValue = CreateSwitchDisplayOriginalValueState(attribute, originalContentValue);
             _switchDisplayUpdateRequest.TryStart(() => UpdateSwitchDisplayAsync(attribute));
         }
 
@@ -121,71 +144,71 @@ namespace Maple.ImGui.Backends.GameUI
         {
             if (GameSessionInfo is null || string.IsNullOrWhiteSpace(display.ObjectId))
             {
-                return AsyncFetchResult<CurrencyEditState>.Failure("Currency info request is invalid.");
+                return AsyncFetchResult<CurrencyEditState>.Failure(GetUiText("Request.Currency.Invalid"));
             }
 
             var result = await Service.GetCurrencyInfoAsync(GameSessionInfo, display.ObjectId, display.DisplayCategory).ConfigureAwait(false);
             if (result.TryGet(out var data) && data is not null)
             {
-                return AsyncFetchResult<CurrencyEditState>.Success(new CurrencyEditState(data, display.DisplayCategory, display.DisplayName ?? display.ObjectId ?? "Currency", display.DisplayDesc ?? string.Empty));
+                return AsyncFetchResult<CurrencyEditState>.Success(new CurrencyEditState(data, display.DisplayCategory, display.DisplayName ?? display.ObjectId ?? GetUiText("Text.Currency"), display.DisplayDesc ?? string.Empty));
             }
 
-            return AsyncFetchResult<CurrencyEditState>.Failure(result.MSG ?? "GetCurrencyInfoAsync failed.");
+            return AsyncFetchResult<CurrencyEditState>.Failure(result.MSG ?? GetUiText("Request.Currency.Failure"));
         }
 
         private async Task<AsyncFetchResult<InventoryEditState>> GetInventoryEditStateAsync(GameInventoryDisplayDTO display)
         {
             if (GameSessionInfo is null || string.IsNullOrWhiteSpace(display.ObjectId))
             {
-                return AsyncFetchResult<InventoryEditState>.Failure("Inventory info request is invalid.");
+                return AsyncFetchResult<InventoryEditState>.Failure(GetUiText("Request.Inventory.Invalid"));
             }
 
             var result = await Service.GetInventoryInfoAsync(GameSessionInfo, display.ObjectId, display.DisplayCategory).ConfigureAwait(false);
             if (result.TryGet(out var data) && data is not null)
             {
-                return AsyncFetchResult<InventoryEditState>.Success(new InventoryEditState(data, display.DisplayCategory, display.DisplayName ?? display.ObjectId ?? "Inventory", display.DisplayDesc ?? string.Empty));
+                return AsyncFetchResult<InventoryEditState>.Success(new InventoryEditState(data, display.DisplayCategory, display.DisplayName ?? display.ObjectId ?? GetUiText("Text.Inventory"), display.DisplayDesc ?? string.Empty));
             }
 
-            return AsyncFetchResult<InventoryEditState>.Failure(result.MSG ?? "GetInventoryInfoAsync failed.");
+            return AsyncFetchResult<InventoryEditState>.Failure(result.MSG ?? GetUiText("Request.Inventory.Failure"));
         }
 
         private async Task<AsyncFetchResult<CharacterStatusDialogState>> GetCharacterStatusDialogStateAsync(GameCharacterDisplayDTO display)
         {
             if (GameSessionInfo is null)
             {
-                return AsyncFetchResult<CharacterStatusDialogState>.Failure("Character status request is invalid.");
+                return AsyncFetchResult<CharacterStatusDialogState>.Failure(GetUiText("Request.CharacterStatus.Invalid"));
             }
 
             var result = await Service.GetCharacterStatusAsync(GameSessionInfo, display).ConfigureAwait(false);
             if (result.TryGet(out var data) && data is not null)
             {
-                return AsyncFetchResult<CharacterStatusDialogState>.Success(new CharacterStatusDialogState(data, display, display.DisplayName ?? display.ObjectId ?? "Character", display.DisplayDesc ?? string.Empty));
+                return AsyncFetchResult<CharacterStatusDialogState>.Success(new CharacterStatusDialogState(data, display, display.DisplayName ?? display.ObjectId ?? GetUiText("Text.Character"), display.DisplayDesc ?? string.Empty));
             }
 
-            return AsyncFetchResult<CharacterStatusDialogState>.Failure(result.MSG ?? "GetCharacterStatusAsync failed.");
+            return AsyncFetchResult<CharacterStatusDialogState>.Failure(result.MSG ?? GetUiText("Request.CharacterStatus.Failure"));
         }
 
         private async Task<AsyncFetchResult<CharacterSkillDialogState>> GetCharacterSkillDialogStateAsync(GameCharacterDisplayDTO display)
         {
             if (GameSessionInfo is null)
             {
-                return AsyncFetchResult<CharacterSkillDialogState>.Failure("Character skill request is invalid.");
+                return AsyncFetchResult<CharacterSkillDialogState>.Failure(GetUiText("Request.CharacterSkill.Invalid"));
             }
 
             var result = await Service.GetCharacterSkillAsync(GameSessionInfo, display).ConfigureAwait(false);
             if (result.TryGet(out var data) && data is not null)
             {
-                return AsyncFetchResult<CharacterSkillDialogState>.Success(new CharacterSkillDialogState(data, display, display.DisplayName ?? display.ObjectId ?? "Character", display.DisplayDesc ?? string.Empty));
+                return AsyncFetchResult<CharacterSkillDialogState>.Success(new CharacterSkillDialogState(data, display, display.DisplayName ?? display.ObjectId ?? GetUiText("Text.Character"), display.DisplayDesc ?? string.Empty));
             }
 
-            return AsyncFetchResult<CharacterSkillDialogState>.Failure(result.MSG ?? "GetCharacterSkillAsync failed.");
+            return AsyncFetchResult<CharacterSkillDialogState>.Failure(result.MSG ?? GetUiText("Request.CharacterSkill.Failure"));
         }
 
         private async Task<AsyncFetchResult<CharacterStatusDialogState>> UpdateCharacterStatusDialogAsync(GameSwitchDisplayDTO attribute)
         {
             if (GameSessionInfo is null || ViewingCharacterStatus is null)
             {
-                return AsyncFetchResult<CharacterStatusDialogState>.Failure("Character status update request is invalid.");
+                return AsyncFetchResult<CharacterStatusDialogState>.Failure(GetUiText("Request.CharacterStatus.UpdateInvalid"));
             }
 
             var result = await Service.UpdateCharacterStatusAsync(
@@ -199,17 +222,20 @@ namespace Maple.ImGui.Backends.GameUI
                 ReplaceCurrentCharacterStatusAttribute(updatedAttribute);
                 return AsyncFetchResult<CharacterStatusDialogState>.Success(
                     new CharacterStatusDialogState(data, ViewingCharacterStatus.Character, ViewingCharacterStatus.DisplayName, ViewingCharacterStatus.DisplayDesc),
-                    $"{attribute.DisplayName ?? attribute.ObjectId ?? "Attribute"}:{GetCharacterStatusAttributeContent(updatedAttribute ?? attribute)}");
+                    GetUiText(
+                        "Format.DisplayValuePair",
+                        attribute.DisplayName ?? attribute.ObjectId ?? GetUiText("Text.Attribute"),
+                        GetCharacterStatusAttributeContent(updatedAttribute ?? attribute)));
             }
 
-            return AsyncFetchResult<CharacterStatusDialogState>.Failure(result.MSG ?? "UpdateCharacterStatusAsync failed.");
+            return AsyncFetchResult<CharacterStatusDialogState>.Failure(result.MSG ?? GetUiText("Request.CharacterStatus.UpdateFailure"));
         }
 
         private async Task<AsyncFetchResult<CharacterSkillDialogState>> UpdateCharacterSkillDialogAsync(string? modifyCategory, string oldSkill, string newSkill, string successMessage)
         {
             if (GameSessionInfo is null || ViewingCharacterSkill is null)
             {
-                return AsyncFetchResult<CharacterSkillDialogState>.Failure("Character skill update request is invalid.");
+                return AsyncFetchResult<CharacterSkillDialogState>.Failure(GetUiText("Request.CharacterSkill.UpdateInvalid"));
             }
 
             var result = await Service.UpdateCharacterSkillAsync(
@@ -226,14 +252,32 @@ namespace Maple.ImGui.Backends.GameUI
                     successMessage);
             }
 
-            return AsyncFetchResult<CharacterSkillDialogState>.Failure(result.MSG ?? "UpdateCharacterSkillAsync failed.");
+            return AsyncFetchResult<CharacterSkillDialogState>.Failure(result.MSG ?? GetUiText("Request.CharacterSkill.UpdateFailure"));
+        }
+
+        private async Task<AsyncFetchResult<CharacterSkillDialogState>> UpdateMonsterMemberAsync(GameMonsterDisplayDTO monster)
+        {
+            if (GameSessionInfo is null || string.IsNullOrWhiteSpace(monster.ObjectId))
+            {
+                return AsyncFetchResult<CharacterSkillDialogState>.Failure(GetUiText("Request.MonsterAdd.Invalid"));
+            }
+
+            var result = await Service.AddMonsterMemberAsync(GameSessionInfo, monster.ObjectId).ConfigureAwait(false);
+            if (result.TryGet(out var data) && data is not null)
+            {
+                return AsyncFetchResult<CharacterSkillDialogState>.Success(
+                    new CharacterSkillDialogState(data, CreateCharacterDisplayFromMonster(monster, data.ObjectId), monster.DisplayName ?? monster.ObjectId ?? GetUiText("Text.Monster"), monster.DisplayDesc ?? string.Empty),
+                    monster.DisplayName ?? monster.ObjectId);
+            }
+
+            return AsyncFetchResult<CharacterSkillDialogState>.Failure(result.MSG ?? GetUiText("Request.MonsterAdd.Failure"));
         }
 
         private async Task<AsyncFetchResult<SwitchDisplayUpdateState>> UpdateSwitchDisplayAsync(GameSwitchDisplayDTO attribute)
         {
             if (GameSessionInfo is null)
             {
-                return AsyncFetchResult<SwitchDisplayUpdateState>.Failure("Switch display update request is invalid.");
+                return AsyncFetchResult<SwitchDisplayUpdateState>.Failure(GetUiText("Request.SwitchDisplay.UpdateInvalid"));
             }
 
             var result = await Service.UpdateSwitchDisplayAsync(GameSessionInfo, attribute).ConfigureAwait(false);
@@ -243,41 +287,41 @@ namespace Maple.ImGui.Backends.GameUI
                     new SwitchDisplayUpdateState(data, GetSwitchDisplayUpdateMessage(data)));
             }
 
-            return AsyncFetchResult<SwitchDisplayUpdateState>.Failure(result.MSG ?? "UpdateSwitchDisplayAsync failed.");
+            return AsyncFetchResult<SwitchDisplayUpdateState>.Failure(result.MSG ?? GetUiText("Request.SwitchDisplay.UpdateFailure"));
         }
 
         private async Task<AsyncFetchResult<string>> UpdateCurrencyEditAsync()
         {
             if (GameSessionInfo is null || EditingCurrency is null)
             {
-                return AsyncFetchResult<string>.Failure("Currency edit state is invalid.");
+                return AsyncFetchResult<string>.Failure(GetUiText("Request.Currency.EditInvalid"));
             }
 
             EditingCurrency.Info.DisplayValue = CurrencyEditValue;
             var result = await Service.UpdateCurrencyInfoAsync(GameSessionInfo, EditingCurrency.Info, EditingCurrency.Category).ConfigureAwait(false);
             if (result.TryGet(out var data) && data is not null)
             {
-                return AsyncFetchResult<string>.Success($"{EditingCurrency.DisplayName}:{data.DisplayValue}");
+                return AsyncFetchResult<string>.Success(GetUiText("Format.DisplayValuePair", EditingCurrency.DisplayName, data.DisplayValue));
             }
 
-            return AsyncFetchResult<string>.Failure(result.MSG ?? "UpdateCurrencyInfoAsync failed.");
+            return AsyncFetchResult<string>.Failure(result.MSG ?? GetUiText("Request.Currency.UpdateFailure"));
         }
 
         private async Task<AsyncFetchResult<string>> UpdateInventoryEditAsync()
         {
             if (GameSessionInfo is null || EditingInventory is null)
             {
-                return AsyncFetchResult<string>.Failure("Inventory edit state is invalid.");
+                return AsyncFetchResult<string>.Failure(GetUiText("Request.Inventory.EditInvalid"));
             }
 
             EditingInventory.Info.DisplayValue = InventoryEditValue;
             var result = await Service.UpdateInventoryInfoAsync(GameSessionInfo, EditingInventory.Category, EditingInventory.Info).ConfigureAwait(false);
             if (result.TryGet(out var data) && data is not null)
             {
-                return AsyncFetchResult<string>.Success($"{EditingInventory.DisplayName}:{data.DisplayValue}");
+                return AsyncFetchResult<string>.Success(GetUiText("Format.DisplayValuePair", EditingInventory.DisplayName, data.DisplayValue));
             }
 
-            return AsyncFetchResult<string>.Failure(result.MSG ?? "UpdateInventoryInfoAsync failed.");
+            return AsyncFetchResult<string>.Failure(result.MSG ?? GetUiText("Request.Inventory.UpdateFailure"));
         }
 
         private static string GetCharacterStatusAttributeContent(GameSwitchDisplayDTO attribute)
@@ -318,7 +362,7 @@ namespace Maple.ImGui.Backends.GameUI
 
             if (attribute.ButtonType)
             {
-                return attribute.ContentValue ?? "Action";
+                return attribute.ContentValue ?? GetUiText("Switch.Action");
             }
 
             return attribute.ContentValue ?? string.Empty;
@@ -355,7 +399,7 @@ namespace Maple.ImGui.Backends.GameUI
 
         private static string GetSwitchDisplayUpdateMessage(GameSwitchDisplayDTO display)
         {
-            var displayName = display.DisplayName ?? display.ObjectId ?? "Switch";
+            var displayName = display.DisplayName ?? display.ObjectId ?? GetUiText("Text.Switch");
             if (display.ContentValue is null)
             {
                 return displayName;
@@ -371,11 +415,11 @@ namespace Maple.ImGui.Backends.GameUI
 
                 if (selectedNames.Length > 0)
                 {
-                    return $"{displayName}:{string.Join(',', selectedNames)}";
+                    return GetUiText("Format.DisplayValuePair", displayName, string.Join(',', selectedNames));
                 }
             }
 
-            return $"{displayName}:{display.ContentValue}";
+            return GetUiText("Format.DisplayValuePair", displayName, display.ContentValue ?? string.Empty);
         }
 
         private void ReplaceCurrentSwitchDisplay(GameSwitchDisplayDTO updatedDisplay)
@@ -408,8 +452,7 @@ namespace Maple.ImGui.Backends.GameUI
             {
                 if (updatedDisplay.TextEditorType)
                 {
-                    SwitchDisplayEditorTexts[key] = updatedDisplay.ContentValue
-                        ?? updatedDisplay.DecimalValue.ToString(CultureInfo.InvariantCulture);
+                    SwitchDisplayEditorTexts[key] = updatedDisplay.ContentValue ?? string.Empty;
                 }
                 else
                 {
@@ -420,45 +463,46 @@ namespace Maple.ImGui.Backends.GameUI
 
         private void RestorePendingSwitchDisplayOriginalValue()
         {
-            RestoreSwitchDisplayOriginalValue(SessionCollections.Switches, PendingSwitchDisplayOriginalValue);
+            RestoreSwitchDisplayOriginalValue(PendingSwitchDisplayOriginalValue);
             PendingSwitchDisplayOriginalValue = null;
         }
 
         private void RestorePendingCharacterStatusOriginalValue()
         {
-            RestoreSwitchDisplayOriginalValue(ViewingCharacterStatus?.Data.CharacterAttributes, PendingCharacterStatusOriginalValue);
+            RestoreSwitchDisplayOriginalValue(PendingCharacterStatusOriginalValue);
             PendingCharacterStatusOriginalValue = null;
         }
 
-        private static SwitchDisplayOriginalValueState CreateSwitchDisplayOriginalValueState(GameSwitchDisplayDTO attribute, string? originalContentValue, decimal originalDecimalValue, bool originalSwitchValue)
+        private static SwitchDisplayOriginalValueState CreateSwitchDisplayOriginalValueState(GameSwitchDisplayDTO attribute, string? originalContentValue)
         {
             return new SwitchDisplayOriginalValueState(
-                attribute.ObjectId ?? string.Empty,
-                originalContentValue,
-                originalDecimalValue,
-                originalSwitchValue);
+                attribute,
+                originalContentValue);
         }
 
-        private void RestoreSwitchDisplayOriginalValue(GameSwitchDisplayDTO[]? displays, SwitchDisplayOriginalValueState? originalValue)
+        private static GameCharacterDisplayDTO CreateCharacterDisplayFromMonster(GameMonsterDisplayDTO monster, string objectId)
         {
-            if (originalValue is null || displays is null)
+            return new GameCharacterDisplayDTO
+            {
+                ObjectId = objectId,
+                DisplayCategory = monster.DisplayCategory,
+                DisplayName = monster.DisplayName,
+                DisplayDesc = monster.DisplayDesc,
+                DisplayImage = monster.DisplayImage,
+            };
+        }
+
+        private void RestoreSwitchDisplayOriginalValue(SwitchDisplayOriginalValueState? originalValue)
+        {
+            if (originalValue is null)
             {
                 return;
             }
 
-            for (var i = 0; i < displays.Length; i++)
-            {
-                if (!string.Equals(displays[i].ObjectId, originalValue.ObjectId, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                displays[i].ContentValue = originalValue.ContentValue;
-                displays[i].DecimalValue = originalValue.DecimalValue;
-                displays[i].SwitchValue = originalValue.SwitchValue;
-                RefreshSwitchDisplayEditorCache(displays[i]);
-                break;
-            }
+            originalValue.Target.ContentValue = originalValue.ContentValue;
+            //         originalValue.Target.DecimalValue = originalValue.DecimalValue;
+            //        originalValue.Target.SwitchValue = originalValue.SwitchValue;
+            RefreshSwitchDisplayEditorCache(originalValue.Target);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Maple.Hook.WinMsg;
+using Maple.ImGui.Backends.Windows;
 using Maple.RenderSpy.Graphics;
 using Maple.RenderSpy.Graphics.D3D9.COM_Direct3DDevice9;
 using Maple.RenderSpy.Graphics.D3D9.HOOK_Direct3DDevice9;
@@ -6,14 +7,14 @@ using Maple.RenderSpy.Graphics.Windows.COM;
 using Maple.UnmanagedExtensions;
 namespace Maple.ImGui.Backends.D3D9
 {
-    public sealed class D3D9BackendHostedService : BackendHostedService
+    public sealed class D3D9BackendHostedService : Win32ImGuiBackendHostedService
     {
-        D3D9BackendImp? BackendImp { get; set; }
+     
         D3D9EndSceneHookItem EndSceneHookItem { get; set; }
         D3D9ResetHookItem ResetHookItem { get; set; }
 
-        public D3D9BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
-         : base(hookFactory, winMsgHookFactory, controller)
+        public D3D9BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
+         : base(hookFactory, winMsgHookFactory, bridgeCollection, view)
         {
 
             this.EndSceneHookItem = hookFactory.Create<D3D9EndSceneHookItem>(EnumGraphicsType.D3D9);
@@ -43,7 +44,7 @@ namespace Maple.ImGui.Backends.D3D9
 
         private COM_HRESULT HookEndScene(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> @this, D3D9EndSceneHookItem hookItem)
         {
-            BackendImp ??= D3D9BackendImp.CreateImp(@this, WinMsgHookFactory, Controller);
+            BackendImp ??= D3D9BackendImp.CreateImp(@this, this);
             BackendImp.Run(@this);
             return hookItem.OriginalMethod.Invoke(@this);
         }

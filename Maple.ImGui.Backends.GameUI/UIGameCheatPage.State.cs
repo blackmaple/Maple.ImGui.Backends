@@ -33,6 +33,16 @@ namespace Maple.ImGui.Backends.GameUI
         private sealed record CharacterSkillActionConfirmState(string? ModifyCategory, string OldSkill, string NewSkill, string DisplayName, bool IsAdd);
 
         /// <summary>
+        /// 表示怪物详情窗口当前绑定的数据上下文。
+        /// </summary>
+        private sealed record MonsterInfoDialogState(GameMonsterDisplayDTO Data, string DisplayName, string DisplayDesc);
+
+        /// <summary>
+        /// 表示怪物加入成员操作的待确认上下文。
+        /// </summary>
+        private sealed record MonsterAddConfirmState(GameMonsterDisplayDTO Monster, string DisplayName, string DisplayDesc);
+
+        /// <summary>
         /// 表示角色技能选择窗口中的统一展示项。
         /// </summary>
         private sealed record CharacterSkillSelectorItem(string? ObjectId, string? DisplayCategory, string? DisplayName, string? DisplayDesc);
@@ -45,7 +55,7 @@ namespace Maple.ImGui.Backends.GameUI
         /// <summary>
         /// 表示一次 Switch 展示项编辑前的原始值快照，用于失败回滚。
         /// </summary>
-        private sealed record SwitchDisplayOriginalValueState(string ObjectId, string? ContentValue, decimal DecimalValue, bool SwitchValue);
+        private sealed record SwitchDisplayOriginalValueState(GameSwitchDisplayDTO Target, string? ContentValue);
 
         /// <summary>
         /// 封装一次 ImGui 页面内的异步请求生命周期。

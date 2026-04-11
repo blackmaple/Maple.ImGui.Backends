@@ -2,26 +2,24 @@
 using Hexa.NET.ImGui.Backends.OpenGL3;
 using Hexa.NET.ImGui.Backends.Win32;
 using Maple.Hook.WinMsg;
-using Maple.ImGui.Backends;
 using Maple.RenderSpy.Graphics.OPENGL;
-
+using Maple.UnmanagedExtensions;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.OPENGL
 {
     internal sealed class OpenGLBackendImp(
         ImGuiContextPtr guiContextPtr,
-
-
-        WinMsgHookItem winMsgHookItem,
-        ImGuiController controller) : ImGuiRaiseRenderBase(controller)
+         ImGuiBackendBridgeCollection bridgeCollection, IImGuiUIView view) : ImGuiBackendImpBase(bridgeCollection, view)
     {
         private const string _glslVersion = "#version 130"; // Default GLSL version, can be customized
 
         ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
 
 
-        WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
-
-        public unsafe static OpenGLBackendImp CreateImp(HandleDeviceContext hdc, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
+ 
+        public unsafe static OpenGLBackendImp CreateImp(HandleDeviceContext hdc, OpenGLBackendHostedService hostedService)
         {
             var hWnd = hdc.WindowHandle;
             if (hWnd == nint.Zero)
@@ -29,27 +27,21 @@ namespace Maple.ImGui.Backends.OPENGL
                 return ImGuiBackendException.Throw<OpenGLBackendImp>("WindowHandle NULL");
             }
 
-            var imguiContext = Hexa.NET.ImGui.ImGui.CreateContext();
+         
+            var imguiContext = ImGuiApi.CreateContext();
+            ImGuiApi.SetCurrentContext(imguiContext);
             ImGuiImplWin32.SetCurrentContext(imguiContext);
-            if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
+            if (false == hostedService.InitPlatform(imguiContext, hWnd))
             {
-                return ImGuiBackendException.Throw<OpenGLBackendImp>($"ImGuiImplWin32 INIT ERROR");
+                return ImGuiBackendException.Throw<OpenGLBackendImp>($"InitPlatform INIT ERROR");
             }
-            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
-            winMsgHookItem.SyncCallback += (hWnd, uMsg, w, l, hookItem) =>
-            {
-                return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
-            };
-            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f);
-            winMsgHookItem.EnabledSyncCallback = true;
-            winMsgHookItem.Start();
 
             ImGuiImplOpenGL3.SetCurrentContext(imguiContext);
             if (!ImGuiImplOpenGL3.Init(_glslVersion))
             {
                 return ImGuiBackendException.Throw<OpenGLBackendImp>($"ImGuiImplOpenGL INIT ERROR");
             }
-            return new OpenGLBackendImp(imguiContext, winMsgHookItem, controller);
+            return new OpenGLBackendImp(imguiContext, hostedService.BridgeCollection, hostedService.View);
         }
 
         protected override void Starting(nint context)
@@ -60,7 +52,7 @@ namespace Maple.ImGui.Backends.OPENGL
         }
         protected override void Start(nint context)
         {
-            this.Controller.CustomRender?.RaiseRender();
+            this.View.RaiseRender();
         }
         protected override void Started(nint context)
         {
@@ -97,6 +89,11 @@ namespace Maple.ImGui.Backends.OPENGL
 
 
         }
+
+
+
+ 
+
     }
 
 }

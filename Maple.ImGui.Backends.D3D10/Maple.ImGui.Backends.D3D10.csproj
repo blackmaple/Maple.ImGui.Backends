@@ -12,11 +12,11 @@
 		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
 		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.403.10-rc" />
 		<PackageReference Include="Maple.RenderSpy.Graphics.D3D10" Version="0.26.401.5-rc" />
-		<PackageReference Include="Maple.RenderSpy.Graphics.DXGI" Version="0.26.401.15-rc" />
+		<PackageReference Include="Maple.RenderSpy.Graphics.DXGI" Version="0.26.409.1-rc" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Maple.ImGui.Backends\Maple.ImGui.Backends.csproj" />
+	  <ProjectReference Include="..\Maple.ImGui.Backends.Windows\Maple.ImGui.Backends.Windows.csproj" />
 	</ItemGroup>
 
 </Project>

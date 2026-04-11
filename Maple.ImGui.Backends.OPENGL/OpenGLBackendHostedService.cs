@@ -1,18 +1,18 @@
 ﻿using Maple.Hook.WinMsg;
+using Maple.ImGui.Backends.Windows;
 using Maple.RenderSpy.Graphics;
 using Maple.RenderSpy.Graphics.OPENGL;
 namespace Maple.ImGui.Backends.OPENGL
 {
-    public class OpenGLBackendHostedService : BackendHostedService
+    public class OpenGLBackendHostedService : Win32ImGuiBackendHostedService
     {
 
 
-        OpenGLBackendImp? BackendImp { get; set; }
-
+ 
         OPENGLwglSwapBuffersHookItem HookItem { get; set; }
 
-        public OpenGLBackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
-            : base(hookFactory, winMsgHookFactory, controller)
+        public OpenGLBackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
+            : base(hookFactory, winMsgHookFactory, bridgeCollection,view)
         {
 
             this.HookItem = hookFactory.Create<OPENGLwglSwapBuffersHookItem>(EnumGraphicsType.OPENGL);
@@ -24,7 +24,7 @@ namespace Maple.ImGui.Backends.OPENGL
 
         private bool Hook_wglSwapBuffers(HandleDeviceContext hdc, OPENGLwglSwapBuffersHookItem hookItem)
         {
-            BackendImp ??= OpenGLBackendImp.CreateImp(hdc, WinMsgHookFactory, this.Controller);
+            BackendImp ??= OpenGLBackendImp.CreateImp(hdc, this);
             BackendImp.Run(hdc.HandleContext);
             return hookItem.OriginalMethod.Invoke(hdc.HandleContext);
         }
@@ -39,7 +39,7 @@ namespace Maple.ImGui.Backends.OPENGL
         {
             this.HookItem.Dispose();
             this.BackendImp?.Dispose();
-
+            this.BridgeCollection.Dispose();
             return Task.CompletedTask;
         }
     }

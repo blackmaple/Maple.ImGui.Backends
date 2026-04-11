@@ -1,16 +1,14 @@
 ﻿using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.D3D11;
 using Hexa.NET.ImGui.Backends.Win32;
-using Maple.Hook.WinMsg;
 using Maple.RenderSpy.Graphics.D3D11.COM_D3D11Device;
 using Maple.RenderSpy.Graphics.D3D11.COM_D3D11DeviceContext;
-using Maple.RenderSpy.Graphics.D3D11.COM_ID3D11RenderTargetView;
+using Maple.RenderSpy.Graphics.D3D11.COM_D3D11RenderTargetView;
+using Maple.RenderSpy.Graphics.D3D11.COM_D3D11Resource;
+using Maple.RenderSpy.Graphics.D3D11.COM_D3D11ShaderResourceView;
 using Maple.RenderSpy.Graphics.DXGI.COM_DXGISwapChain;
 using Maple.RenderSpy.Graphics.Windows.COM;
-using Maple.UnmanagedExtensions;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.D3D11
 {
@@ -18,16 +16,17 @@ namespace Maple.ImGui.Backends.D3D11
         ImGuiContextPtr guiContextPtr,
         COM_PTR_IUNKNOWN<ID3D11DeviceImp> d3D11DevicePtr,
         COM_PTR_IUNKNOWN<ID3D11DeviceContextImp> d3D11DeviceContextPtr,
-        WinMsgHookItem winMsgHookItem,
-        ImGuiController controller) : ImGuiRaiseRenderBase(controller)
+
+        ImGuiBackendBridgeCollection bridgeCollection,
+        IImGuiUIView view) : ImGuiBackendImpBase(bridgeCollection, view)
     {
         ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
         COM_PTR_IUNKNOWN<ID3D11DeviceImp> ID3D11DevicePtr { get; set; } = d3D11DevicePtr;
         COM_PTR_IUNKNOWN<ID3D11DeviceContextImp> ID3D11DeviceContextPtr { get; set; } = d3D11DeviceContextPtr;
-        WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
+
         COM_PTR_IUNKNOWN<ID3D11RenderTargetViewImp> ID3D11RenderTargetViewPtr = default;
 
-        public unsafe static D3D11BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
+        public unsafe static D3D11BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, D3D11BackendHostedService hostedService)
         {
             var hWnd = pSwapChain.GetOutputWindow();
             if (hWnd == nint.Zero)
@@ -43,53 +42,13 @@ namespace Maple.ImGui.Backends.D3D11
             }
             pDevice.GetImmediateContext(out var pContext);
 
-            //   pDevice.TryCreateBackbufferRTV(pSwapChain, out var pRTView);
-            //if (pDevice.TryCreateBackbufferRTV(pSwapChain, out var pRTView))
-            //{
-
-            //}
-            // var mainWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
-            //var inputWindowHandle = mainWindowHandle != nint.Zero ? mainWindowHandle : hWnd;
-            //customRender.Logger.LogInformation("renderHWnd:{hWnd}/inputWindowHandle:{inputWindowHandle}/mainWindowHandle:{mainWindowHandle}"
-            //  , hWnd, inputWindowHandle, mainWindowHandle);
-
-            //   var previousDpiContext = ImGuiWin32InputBridge.MatchThreadDpiAwarenessContext(hWnd);
             var imguiContext = ImGuiApi.CreateContext();
             ImGuiApi.SetCurrentContext(imguiContext);
-            var io = ImGuiApi.GetIO();
-            io.MouseDrawCursor = true;
-            io.WantTextInput = true;
-            io.UserData = controller.Handle.ToPointer();
-
-
-
-            delegate* unmanaged[Cdecl]<UnsafePtr<ImGuiContext>, UnsafePtr<ImGuiViewport>, UnsafePtr<ImGuiPlatformImeData>, void> setImeDataProc = &SetImeData;
-            var platformIO = ImGuiApi.GetPlatformIO();
-            platformIO.PlatformSetImeDataFn = setImeDataProc;
-
-            //  platformIO..
-
-
-
-
-            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
-            winMsgHookItem.AdditionalContent.Set(nameof(ImGuiController), controller);
-            winMsgHookItem.SyncCallback += WinProcCallback;
-
-            winMsgHookItem.EnabledSyncCallback = true;
-            winMsgHookItem.Start();
-            //   customRender.Logger.LogInformation("hook windows msg:{enable}", );
-
             ImGuiImplWin32.SetCurrentContext(imguiContext);
-            //    var dpiScale = MathF.Max(1.0f, ImGuiWin32InputBridge.GetWindowDpiScale(hWnd));
-            if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
+            if (false == hostedService.InitPlatform(imguiContext, hWnd))
             {
-                //      ImGuiWin32InputBridge.RestoreThreadDpiAwarenessContext(previousDpiContext);
-                return ImGuiBackendException.Throw<D3D11BackendImp>($"ImGuiImplWin32 INIT ERROR");
+                return ImGuiBackendException.Throw<D3D11BackendImp>($"InitPlatform INIT ERROR");
             }
-            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f);
-
-            //   ImGuiWin32InputBridge.RestoreThreadDpiAwarenessContext(previousDpiContext);
 
             var pID3D11DevicePtr = new ID3D11DevicePtr(pDevice.AsPointer<ID3D11DeviceImp, ID3D11Device>());
             var pID3D11DeviceContextPtr = new ID3D11DeviceContextPtr(pContext.AsPointer<ID3D11DeviceContextImp, ID3D11DeviceContext>());
@@ -98,7 +57,7 @@ namespace Maple.ImGui.Backends.D3D11
             {
                 return ImGuiBackendException.Throw<D3D11BackendImp>($"ImGuiImplD3D11 INIT ERROR");
             }
-            return new D3D11BackendImp(imguiContext, pDevice, pContext, winMsgHookItem, controller);
+            return new D3D11BackendImp(imguiContext, pDevice, pContext, hostedService.BridgeCollection, hostedService.View);
         }
 
         protected override void Starting(nint context)
@@ -118,7 +77,7 @@ namespace Maple.ImGui.Backends.D3D11
         }
         protected override void Start(nint context)
         {
-            this.Controller.CustomRender?.RaiseRender();
+            this.View.RaiseRender();
         }
         protected override void Started(nint context)
         {
@@ -150,7 +109,7 @@ namespace Maple.ImGui.Backends.D3D11
                 ImGuiApi.DestroyContext(imguiContext);
             }
 
-            this.WinMsgHookItem.Dispose();
+          
         }
 
         public override void Resetting(nint context)
@@ -177,59 +136,25 @@ namespace Maple.ImGui.Backends.D3D11
         }
 
 
-        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-        private static unsafe void SetImeData(UnsafePtr<ImGuiContext> ctx, UnsafePtr<ImGuiViewport> viewport, UnsafePtr<ImGuiPlatformImeData> data)
+      
+
+        protected override ImTextureID CreateImTextureID(nint textureNativePtr)
         {
-            //0x000002650ad21388
-            // ctx.Raw.p
-            var ptr_userData = new nint(ctx.Raw.IO.UserData);
-            if (ptr_userData == nint.Zero || false == ImGuiController.TryGet<ImGuiController>(ptr_userData, out var controller))
-            {
-                return;
-            }
-            ref var ref_data = ref data.Raw;
-            bool wantIME = ref_data.WantVisible == 1;
-            controller.UnityInputBridge?.PlatformSetImeDataFn(wantIME);
+            _ = TryCreateShaderResourceView(textureNativePtr, out var pSRView);
+            nint ptr = pSRView;
+            return new ImTextureID(ptr);
         }
 
-        private static bool WinProcCallback(nint hWnd,uint uMsg, nuint w,nint l, WinMsgHookItem hooItem)
+        private bool TryCreateShaderResourceView(nint textureNativePtr, out COM_PTR_IUNKNOWN<ID3D11ShaderResourceViewImp> pSRView)
         {
-            //ImGuiApi.SetCurrentContext(imguiContext);
-            //ImGuiImplWin32.SetCurrentContext(imguiContext);
-
-            //if (ImGuiWin32InputBridge.TryHandleImeComposition(hWnd, uMsg, l))
-            //{
-            //    return true;
-            //}
-            //var text = ImGuiWin32InputBridge.Debug(uMsg);
-            //if (!string.IsNullOrEmpty(text))
-            //{
-            //    controller.Logger.LogInformation("WinMsgHookItem: {text}", text);
-            //}
-            //   
-            //if (ImGuiWin32InputBridge.TryHandleImeComposition(hWnd, uMsg, w, l))
-            //{
-            //    controller.Logger.LogInformation("TryHandleImeComposition: true");
-            //    return true;
-            //}
-
-            if (hooItem.AdditionalContent.TryGet<ImGuiController>(nameof(ImGuiController),out var controller))
-            {
-                if (controller.Win32InputBridge?.TryHandleImeComposition(hWnd, uMsg, w, l) ==true)
-                {
-                    return true;
-                }
-            }
-            
-            return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
+            var pResource = ID3D11ResourceImpExtension.Create(textureNativePtr);
+            return this.ID3D11DevicePtr.TryCreateShaderResourceView(pResource, out pSRView);
         }
-
-
     }
 
 
 
-
+   
 
 
 }

@@ -1,27 +1,25 @@
 ﻿using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.D3D10;
 using Hexa.NET.ImGui.Backends.Win32;
-using Maple.Hook.WinMsg;
-using Maple.ImGui.Backends;
 using Maple.RenderSpy.Graphics.D3D10.COM_D3D10Device;
 using Maple.RenderSpy.Graphics.DXGI.COM_DXGISwapChain;
 using Maple.RenderSpy.Graphics.Windows.COM;
-
+using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.D3D10
 {
     internal sealed class D3D10BackendImp(
         ImGuiContextPtr guiContextPtr,
         COM_PTR_IUNKNOWN<ID3D10DeviceImp> D3D10DevicePtr,
-        WinMsgHookItem winMsgHookItem,
-        ImGuiController controller) : ImGuiRaiseRenderBase(controller)
+        ImGuiBackendBridgeCollection bridgeCollection,
+        IImGuiUIView view
+        ) : ImGuiBackendImpBase(bridgeCollection, view)
 
     {
         ImGuiContextPtr ImGuiContextPtr { get; set; } = guiContextPtr;
         COM_PTR_IUNKNOWN<ID3D10DeviceImp> ID3D10DevicePtr { get; set; } = D3D10DevicePtr;
 
-        WinMsgHookItem WinMsgHookItem { get; set; } = winMsgHookItem;
 
-        public unsafe static D3D10BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, Maple.Hook.WinMsg.WinMsgHookFactory winMsgHookFactory, ImGuiController controller)
+        public unsafe static D3D10BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, D3D10BackendHostedService hostedService)
         {
             var hWnd = pSwapChain.GetOutputWindow();
             if (hWnd == nint.Zero)
@@ -35,21 +33,13 @@ namespace Maple.ImGui.Backends.D3D10
                 return ImGuiBackendException.Throw<D3D10BackendImp>($"GetDevice ERROR:{hResult}");
             }
 
-            var imguiContext = Hexa.NET.ImGui.ImGui.CreateContext();
+            var imguiContext = ImGuiApi.CreateContext();
+            ImGuiApi.SetCurrentContext(imguiContext);
             ImGuiImplWin32.SetCurrentContext(imguiContext);
-            if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
+            if (false == hostedService.InitPlatform(imguiContext, hWnd))
             {
-                return ImGuiBackendException.Throw<D3D10BackendImp>($"ImGuiImplWin32 INIT ERROR");
+                return ImGuiBackendException.Throw<D3D10BackendImp>($"InitPlatform INIT ERROR");
             }
-            ImGuiSystemFontLoader.LoadPreferredChineseSystemFont(18.0f);
-
-            var winMsgHookItem = winMsgHookFactory.CreateRequiresNew(hWnd);
-            winMsgHookItem.SyncCallback += (hWnd, uMsg, w, l, hookItem) =>
-            {
-                return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
-            };
-            winMsgHookItem.EnabledSyncCallback = true;
-            winMsgHookItem.Start();
 
             var pID3D10DevicePtr = new ID3D10DevicePtr(pDevice.AsPointer<ID3D10DeviceImp, ID3D10Device>());
             ImGuiImplD3D10.SetCurrentContext(imguiContext);
@@ -57,7 +47,7 @@ namespace Maple.ImGui.Backends.D3D10
             {
                 return ImGuiBackendException.Throw<D3D10BackendImp>($"ImGuiImplD3D10 INIT ERROR");
             }
-            return new D3D10BackendImp(imguiContext, pDevice, winMsgHookItem, controller);
+            return new D3D10BackendImp(imguiContext, pDevice, hostedService.BridgeCollection, hostedService.View);
         }
 
         protected override void Starting(nint context)
@@ -69,7 +59,7 @@ namespace Maple.ImGui.Backends.D3D10
 
         protected override void Start(nint context)
         {
-            this.Controller.CustomRender?.RaiseRender();
+            this.View.RaiseRender();
         }
 
         protected override void Started(nint context)
@@ -98,7 +88,6 @@ namespace Maple.ImGui.Backends.D3D10
                 ImGuiImplD3D10.Shutdown();
                 Hexa.NET.ImGui.ImGui.DestroyContext(imguiContext);
             }
-            this.WinMsgHookItem.Dispose();
         }
 
         public override void Resetting(nint context)
@@ -108,12 +97,16 @@ namespace Maple.ImGui.Backends.D3D10
         }
         public override void Reset(nint context)
         {
-           ImGuiImplD3D10.InvalidateDeviceObjects();
+            ImGuiImplD3D10.InvalidateDeviceObjects();
         }
         public override void Resetted(nint context)
         {
             ImGuiImplD3D10.CreateDeviceObjects();
         }
+
+      
+
+
 
     }
 }

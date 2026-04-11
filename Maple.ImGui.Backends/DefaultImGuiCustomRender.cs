@@ -1,15 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using Windows.Win32;
-using Windows.Win32.Foundation;
 using UI = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends
 {
-    public class DefaultImGuiCustomRender(ILogger<DefaultImGuiCustomRender> logger) : IImGuiRender
+    public class DefaultImGuiCustomRender(ILogger<DefaultImGuiCustomRender> logger) : IImGuiUIView
     {
         public ILogger Logger { get; } = logger;
         string text = string.Empty;
         nint MainWindowHandle { get; } = Process.GetCurrentProcess().MainWindowHandle;
+        public TryDrawImageDelegate? TryDrawImage { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public bool ShowSessionWindow => throw new NotImplementedException();
+
         public void RaiseRender()
         {
             UI.ShowDemoWindow();
@@ -31,5 +33,4 @@ namespace Maple.ImGui.Backends
             UI.End();
         }
     }
-
 }

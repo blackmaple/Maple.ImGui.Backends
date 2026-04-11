@@ -1,4 +1,4 @@
-﻿using Maple.Hook.Imp.Dobby.Static;
+﻿using Maple.Hook.Imp.Dobby.Dynamic;
 using Maple.Hook.WinMsg;
 using Maple.ImGui.Backends.D3D11;
 using Maple.ImGui.Backends.Windows;
@@ -13,11 +13,9 @@ namespace Maple.ImGui.Backends.GameUI
         public static IServiceCollection AddGameCheatPage_Test(this IServiceCollection @this)
         {
             //   EnsureRenderSpyAssembliesLoaded();
-
-            @this.AddSingleton<ImGuiController>();
-
-
-            @this.AddSingleton<IImGuiRender, UIGameCheatPage>();
+            @this.AddDefaultWin32InputBridge();
+            @this.AddBridgeCollection();
+            @this.AddSingleton<IImGuiUIView, UIGameCheatPage>();
 
             //     @this.AddHostedService<D3D11BackendHostedService>();
 
@@ -26,8 +24,8 @@ namespace Maple.ImGui.Backends.GameUI
             @this.AddD3D11FunctionsProvider();
 
             @this.AddWindowsGraphicsHookFactory(true);
-            // @this.AddDobbyHookDynamicFactory("Dobby.dll");
-            @this.AddDobbyHookNativeFactory();
+             @this.AddDobbyHookDynamicFactory("Dobby.dll");
+            //  @this.AddDobbyHookDynamicFactory();
             return @this;
         }
 
@@ -36,11 +34,9 @@ namespace Maple.ImGui.Backends.GameUI
         public static IServiceCollection AddGameCheatPage(this IServiceCollection @this)
         {
             //   EnsureRenderSpyAssembliesLoaded();
-            @this.AddSingleton<IImGuiWin32InputBridge,ImGuiWin32InputBridge>();
-            @this.AddSingleton<ImGuiController>();
-
-
-            @this.AddSingleton<IImGuiRender, UIGameCheatPage>();
+            @this.AddDefaultWin32InputBridge();
+            @this.AddBridgeCollection();
+            @this.AddSingleton<IImGuiUIView, UIGameCheatPage>();
 
             @this.AddHostedService<D3D11BackendHostedService>();
 
@@ -49,8 +45,8 @@ namespace Maple.ImGui.Backends.GameUI
             @this.AddD3D11FunctionsProvider();
 
             @this.AddWindowsGraphicsHookFactory();
-            // @this.AddDobbyHookDynamicFactory("Dobby.dll");
-            @this.AddDobbyHookNativeFactory();
+           @this.AddDobbyHookDynamicFactory("Dobby.dll");
+            //     @this.AddDobbyHookNativeFactory();
             return @this;
         }
 

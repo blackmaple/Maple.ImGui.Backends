@@ -3,7 +3,7 @@ using Maple.MonoGameAssistant.Model;
 
 namespace Maple.ImGui.Backends.GameUI
 {
-    public class DefaultGameCheatService(IGameWebApiControllers apiControllers) : IGameCheatService
+    public class DefaultGameDataService(IGameWebApiControllers apiControllers) : IGameDataService
     {
         IGameWebApiControllers Controllers { get; } = apiControllers;
 

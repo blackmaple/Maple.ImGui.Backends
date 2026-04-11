@@ -13,7 +13,7 @@ namespace Maple.ImGui.Backends.GameUI
         {
             var compactTitleBarHeight = SessionTitleBarHeight - 10.0f;
             var title = string.IsNullOrWhiteSpace(GameSessionInfo?.DisplayName)
-                ? "Game Session"
+                ? GetUiText("Dialog.Help.TitleFallback")
                 : GameSessionInfo.DisplayName;
             var titleTextColor = new Vector4(1f, 1f, 1f, 1f);
             var titleBarColor = new Vector4(0.10f, 0.12f, 0.16f, 0.98f);
@@ -47,62 +47,62 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.TextUnformatted(title);
             ImGuiApi.PopStyleColor();
 
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, 999.0f);
-            ImGuiApi.PushStyleColor(ImGuiCol.Button, new Vector4(0.18f, 0.20f, 0.24f, 1.0f));
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.26f, 0.30f, 0.38f, 1.0f));
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.15f, 0.18f, 0.24f, 1.0f));
+            PushIconButtonStyle(
+                new Vector4(0.18f, 0.20f, 0.24f, 1.0f),
+                new Vector4(0.26f, 0.30f, 0.38f, 1.0f),
+                new Vector4(0.15f, 0.18f, 0.24f, 1.0f),
+                999.0f);
             ImGuiApi.SetCursorPos(new Vector2(helpX, 6.0f));
             if (ImGuiApi.Button("?##Help", buttonSize))
             {
-                PendingOpenGameSessionHelpPopup = true;
+                ShowGameSessionHelpDialog = true;
             }
 
-            ImGuiApi.PopStyleColor(3);
-            ImGuiApi.PopStyleVar();
+            PopIconButtonStyle();
 
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, 999.0f);
-            ImGuiApi.PushStyleColor(ImGuiCol.Button, new Vector4(0.44f, 0.16f, 0.16f, 1.0f));
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.76f, 0.22f, 0.22f, 1.0f));
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.58f, 0.12f, 0.12f, 1.0f));
+            PushIconButtonStyle(
+                new Vector4(0.44f, 0.16f, 0.16f, 1.0f),
+                new Vector4(0.76f, 0.22f, 0.22f, 1.0f),
+                new Vector4(0.58f, 0.12f, 0.12f, 1.0f),
+                999.0f);
             ImGuiApi.SetCursorPos(new Vector2(closeX, 6.0f));
             if (ImGuiApi.Button("×##Close", buttonSize))
             {
                 isOpen = false;
             }
 
-            ImGuiApi.PopStyleColor(3);
-            ImGuiApi.PopStyleVar();
+            PopIconButtonStyle();
 
-            RenderTitleTabsVertical(tabsLocalStart, SessionSideTabColumnWidth);
+            RenderTitleTabsVertical(tabsLocalStart, SessionSideTabColumnWidth, tabsColumnMax.Y - tabsColumnMin.Y);
         }
 
-        private void RenderTitleTabsVertical(Vector2 startPos, float availableWidth)
+        private void RenderTitleTabsVertical(Vector2 startPos, float availableWidth, float availableHeight)
         {
             var tabItems = new[]
             {
-                ("Currency", SessionTab.Currency),
-                ("Inventory", SessionTab.Inventory),
-                ("Character", SessionTab.Character),
-                ("Monster", SessionTab.Monster),
-                ("Skill", SessionTab.Skill),
-                ("Misc", SessionTab.Switch)
+                (GetUiText("Tab.Currency"), SessionTab.Currency),
+                (GetUiText("Tab.Inventory"), SessionTab.Inventory),
+                (GetUiText("Tab.Character"), SessionTab.Character),
+                (GetUiText("Tab.Monster"), SessionTab.Monster),
+                (GetUiText("Tab.Misc"), SessionTab.Switch)
             };
 
+            const float tabSpacing = 8.0f;
             var tabWidth = MathF.Max(72.0f, availableWidth - 8.0f);
+            var tabHeight = MathF.Max(TitleTabHeight, (availableHeight - ((tabItems.Length - 1) * tabSpacing)) / tabItems.Length);
             var cursorX = startPos.X;
             var cursorY = startPos.Y;
-            const float tabSpacing = 8.0f;
             foreach (var (tabName, tab) in tabItems)
             {
-                RenderTitleTabButton(tabName, tab, tabWidth, cursorX, ref cursorY, tabSpacing);
+                RenderTitleTabButton(tabName, tab, tabWidth, tabHeight, cursorX, ref cursorY, tabSpacing);
             }
         }
 
-        private void RenderTitleTabButton(string tabName, SessionTab tab, float buttonWidth, float cursorX, ref float cursorY, float tabSpacing)
+        private void RenderTitleTabButton(string tabName, SessionTab tab, float buttonWidth, float buttonHeight, float cursorX, ref float cursorY, float tabSpacing)
         {
             var isSelected = SelectedSessionTab == tab;
             ImGuiApi.SetCursorPos(new Vector2(cursorX, cursorY));
-            if (ImGuiApi.InvisibleButton($"{tabName}##{tab}", new Vector2(buttonWidth, TitleTabHeight)))
+            if (ImGuiApi.InvisibleButton($"{tabName}##{tab}", new Vector2(buttonWidth, buttonHeight)))
             {
                 SelectedSessionTab = tab;
             }
@@ -134,11 +134,11 @@ namespace Maple.ImGui.Backends.GameUI
 
             var textSize = ImGuiApi.CalcTextSize(tabName);
             drawList.AddText(
-                new Vector2(itemMin.X + (buttonWidth - textSize.X) * 0.5f, itemMin.Y + (TitleTabHeight - textSize.Y) * 0.5f),
+                new Vector2(itemMin.X + (buttonWidth - textSize.X) * 0.5f, itemMin.Y + (buttonHeight - textSize.Y) * 0.5f),
                 ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.96f, 0.96f, 0.96f, 1.0f)),
                 tabName);
 
-            cursorY += TitleTabHeight + tabSpacing;
+            cursorY += buttonHeight + tabSpacing;
         }
     }
 }

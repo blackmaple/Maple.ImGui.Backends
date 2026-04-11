@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+	  <TargetFramework>net10.0-windows</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
-		 
+	  <ProjectReference Include="..\Maple.ImGui.Backends\Maple.ImGui.Backends.csproj" />
 	</ItemGroup>
 </Project>

@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Maple.ImGui.Backends\Maple.ImGui.Backends.csproj" />
+		<ProjectReference Include="..\Maple.ImGui.Backends.Windows\Maple.ImGui.Backends.Windows.csproj" />
 	</ItemGroup>
 
 </Project>

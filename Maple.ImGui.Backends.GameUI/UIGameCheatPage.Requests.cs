@@ -18,7 +18,7 @@ namespace Maple.ImGui.Backends.GameUI
                         GameSessionInfo = result.Data;
                         ShowSessionWindow = true;
                         LauncherVisible = false;
-                        AddToast(result.Message ?? "GetGameSessionInfoAsync success.", UiToastKind.Success);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.GameSession.Success"), UiToastKind.Success);
                         if (!_sessionCollectionsRequest.IsRunning)
                         {
                             _sessionCollectionsRequest.TryStart(LoadSessionCollectionsAsync);
@@ -26,7 +26,7 @@ namespace Maple.ImGui.Backends.GameUI
                     }
                     else
                     {
-                        AddToast(result.Message ?? "GetGameSessionInfoAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.GameSession.Failure"), UiToastKind.Error);
                     }
                 },
                 onError: exception => AddToast(exception.Message, UiToastKind.Error));
@@ -37,12 +37,12 @@ namespace Maple.ImGui.Backends.GameUI
                     SessionCollections = collections;
                     if (ReloadingTab is { } reloadingTab)
                     {
-                        AddToast($"{reloadingTab} loaded {GetDisplayCount(collections, reloadingTab)} items.", UiToastKind.Success);
+                        AddToast(GetUiText("Toast.Request.SessionCollections.Reloaded", reloadingTab, GetDisplayCount(collections, reloadingTab)), UiToastKind.Success);
                         ReloadingTab = null;
                     }
                     else
                     {
-                        AddToast($"Session display lists loaded: {GetTotalDisplayCount(collections)} items.", UiToastKind.Success);
+                        AddToast(GetUiText("Toast.Request.SessionCollections.Loaded", GetTotalDisplayCount(collections)), UiToastKind.Success);
                     }
                 },
                 onError: exception =>
@@ -57,7 +57,7 @@ namespace Maple.ImGui.Backends.GameUI
                 {
                     if (!result.IsSuccess || result.Data is null)
                     {
-                        AddToast(result.Message ?? "GetCurrencyInfoAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.CurrencyInfo.Failure"), UiToastKind.Error);
                         return;
                     }
 
@@ -72,7 +72,7 @@ namespace Maple.ImGui.Backends.GameUI
                 {
                     if (!result.IsSuccess || result.Data is null)
                     {
-                        AddToast(result.Message ?? "GetInventoryInfoAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.InventoryInfo.Failure"), UiToastKind.Error);
                         return;
                     }
 
@@ -87,7 +87,7 @@ namespace Maple.ImGui.Backends.GameUI
                 {
                     if (!result.IsSuccess || result.Data is null)
                     {
-                        AddToast(result.Message ?? "GetCharacterStatusAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.CharacterStatus.Failure"), UiToastKind.Error);
                         return;
                     }
 
@@ -102,16 +102,20 @@ namespace Maple.ImGui.Backends.GameUI
                     if (!result.IsSuccess || result.Data is null)
                     {
                         RestorePendingCharacterStatusOriginalValue();
-                        AddToast(result.Message ?? "UpdateCharacterStatusAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.CharacterStatus.UpdateFailure"), UiToastKind.Error);
                         return;
                     }
 
                     ViewingCharacterStatus = result.Data;
                     ShowCharacterStatusDialog = true;
                     PendingCharacterStatusOriginalValue = null;
-                    AddToast(result.Message ?? "Character status updated.", UiToastKind.Success);
+                    AddToast(result.Message ?? GetUiText("Toast.Request.CharacterStatus.Updated"), UiToastKind.Success);
                 },
-                onError: exception => AddToast(exception.Message, UiToastKind.Error));
+                onError: exception =>
+                {
+                    RestorePendingCharacterStatusOriginalValue();
+                    AddToast(exception.Message, UiToastKind.Error);
+                });
 
             _switchDisplayUpdateRequest.Update(
                 onSuccess: result =>
@@ -119,7 +123,7 @@ namespace Maple.ImGui.Backends.GameUI
                     if (!result.IsSuccess || result.Data is null)
                     {
                         RestorePendingSwitchDisplayOriginalValue();
-                        AddToast(result.Message ?? "UpdateSwitchDisplayAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.SwitchDisplay.UpdateFailure"), UiToastKind.Error);
                         return;
                     }
 
@@ -128,6 +132,27 @@ namespace Maple.ImGui.Backends.GameUI
 
                     AddToast(result.Data.Message, UiToastKind.Success);
                 },
+                onError: exception =>
+                {
+                    RestorePendingSwitchDisplayOriginalValue();
+                    AddToast(exception.Message, UiToastKind.Error);
+                });
+
+            _monsterAddRequest.Update(
+                onSuccess: result =>
+                {
+                    if (!result.IsSuccess || result.Data is null)
+                    {
+                        AddToast(result.Message ?? GetUiText("Toast.Request.MonsterAdd.Failure"), UiToastKind.Error);
+                        return;
+                    }
+
+                    ViewingCharacterSkill = result.Data;
+                    ShowCharacterSkillDialog = true;
+                    ShowCharacterSkillSelectorDialog = false;
+                    PendingMonsterAddAction = null;
+                    AddToast(result.Message ?? GetUiText("Toast.Request.MonsterAdd.Success"), UiToastKind.Success);
+                },
                 onError: exception => AddToast(exception.Message, UiToastKind.Error));
 
             _characterSkillRequest.Update(
@@ -135,7 +160,7 @@ namespace Maple.ImGui.Backends.GameUI
                 {
                     if (!result.IsSuccess || result.Data is null)
                     {
-                        AddToast(result.Message ?? "GetCharacterSkillAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.CharacterSkill.Failure"), UiToastKind.Error);
                         return;
                     }
 
@@ -149,14 +174,14 @@ namespace Maple.ImGui.Backends.GameUI
                 {
                     if (!result.IsSuccess || result.Data is null)
                     {
-                        AddToast(result.Message ?? "UpdateCharacterSkillAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.CharacterSkill.UpdateFailure"), UiToastKind.Error);
                         return;
                     }
 
                     ViewingCharacterSkill = result.Data;
                     ShowCharacterSkillDialog = true;
                     ShowCharacterSkillSelectorDialog = false;
-                    AddToast(result.Message ?? "Character skill updated.", UiToastKind.Success);
+                    AddToast(result.Message ?? GetUiText("Toast.Request.CharacterSkill.Updated"), UiToastKind.Success);
                 },
                 onError: exception => AddToast(exception.Message, UiToastKind.Error));
 
@@ -165,12 +190,12 @@ namespace Maple.ImGui.Backends.GameUI
                 {
                     if (!result.IsSuccess)
                     {
-                        AddToast(result.Message ?? "UpdateCurrencyInfoAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.Currency.UpdateFailure"), UiToastKind.Error);
                         return;
                     }
 
                     PendingCloseCurrencyEditPopup = true;
-                    AddToast(result.Data ?? "Currency updated.", UiToastKind.Success);
+                    AddToast(result.Data ?? GetUiText("Toast.Request.Currency.Updated"), UiToastKind.Success);
                 },
                 onError: exception => AddToast(exception.Message, UiToastKind.Error));
 
@@ -179,12 +204,12 @@ namespace Maple.ImGui.Backends.GameUI
                 {
                     if (!result.IsSuccess)
                     {
-                        AddToast(result.Message ?? "UpdateInventoryInfoAsync failed.", UiToastKind.Error);
+                        AddToast(result.Message ?? GetUiText("Toast.Request.Inventory.UpdateFailure"), UiToastKind.Error);
                         return;
                     }
 
                     PendingCloseInventoryEditPopup = true;
-                    AddToast(result.Data ?? "Inventory updated.", UiToastKind.Success);
+                    AddToast(result.Data ?? GetUiText("Toast.Request.Inventory.Updated"), UiToastKind.Success);
                 },
                 onError: exception => AddToast(exception.Message, UiToastKind.Error));
         }
@@ -194,10 +219,10 @@ namespace Maple.ImGui.Backends.GameUI
             var result = await Service.GetGameSessionInfoAsync().ConfigureAwait(false);
             if (result.TryGet(out var data))
             {
-                return AsyncFetchResult<GameSessionInfoDTO?>.Success(data, "GetGameSessionInfoAsync success.");
+                return AsyncFetchResult<GameSessionInfoDTO?>.Success(data, GetUiText("Request.GameSession.Success"));
             }
 
-            return AsyncFetchResult<GameSessionInfoDTO?>.Failure(result.MSG ?? "GetGameSessionInfoAsync failed.");
+            return AsyncFetchResult<GameSessionInfoDTO?>.Failure(result.MSG ?? GetUiText("Request.GameSession.Failure"));
         }
 
         private void AddToast(string message, UiToastKind kind)
