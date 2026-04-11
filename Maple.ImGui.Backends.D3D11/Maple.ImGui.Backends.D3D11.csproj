@@ -5,8 +5,29 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>Maple.ImGui.Backends.D3D11</Title>
+		<RepositoryUrl>https://github.com/blackmaple/Maple.ImGui.Backends</RepositoryUrl>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+		<Description>dotNet ImGui Backends D3D11</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>hook;c#;dotnet;AOT</PackageTags>
+		<Version>0.26.0411.01-rc</Version>
 	</PropertyGroup>
 
+
+	<ItemGroup>
+		<None Include="..\LICENSE" Link="LICENSE">
+			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+		</None>
+		<None Include="..\README.md" Link="README.md">
+			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+		</None>
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
 		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
