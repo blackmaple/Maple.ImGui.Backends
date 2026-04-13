@@ -17,7 +17,7 @@
 		<Description>dotNet ImGui Backends Windows</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>hook;c#;dotnet;AOT</PackageTags>
-		<Version>0.26.0411.01-rc</Version>
+		<Version>0.26.0413.01-rc</Version>
 	</PropertyGroup>
 
 
@@ -33,7 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.403.10-rc" />
+		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.413.1-rc" />
 		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
 
 		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />

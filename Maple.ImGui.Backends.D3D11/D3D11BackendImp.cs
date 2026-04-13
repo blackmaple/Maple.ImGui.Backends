@@ -26,7 +26,7 @@ namespace Maple.ImGui.Backends.D3D11
 
         COM_PTR_IUNKNOWN<ID3D11RenderTargetViewImp> ID3D11RenderTargetViewPtr = default;
 
-        public unsafe static D3D11BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, D3D11BackendHostedService hostedService)
+        public unsafe static D3D11BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, D3D11BackendService hostedService)
         {
             var hWnd = pSwapChain.GetOutputWindow();
             if (hWnd == nint.Zero)

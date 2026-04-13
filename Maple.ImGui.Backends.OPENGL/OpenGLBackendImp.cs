@@ -19,7 +19,7 @@ namespace Maple.ImGui.Backends.OPENGL
 
 
  
-        public unsafe static OpenGLBackendImp CreateImp(HandleDeviceContext hdc, OpenGLBackendHostedService hostedService)
+        public unsafe static OpenGLBackendImp CreateImp(HandleDeviceContext hdc, OpenGLBackendService hostedService)
         {
             var hWnd = hdc.WindowHandle;
             if (hWnd == nint.Zero)

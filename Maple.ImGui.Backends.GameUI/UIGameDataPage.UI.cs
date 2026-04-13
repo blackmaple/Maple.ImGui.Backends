@@ -7,7 +7,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责页面主窗口骨架与通用 UI 入口行为。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private const string GameSessionHelpPopupName = "Game Session Help";
         private const string CurrencyEditPopupName = "Currency Edit";

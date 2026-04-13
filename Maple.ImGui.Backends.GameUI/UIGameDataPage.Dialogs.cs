@@ -10,7 +10,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责帮助弹窗与编辑弹窗的绘制。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private bool IsCharacterSkillDialogInteractive()
         {

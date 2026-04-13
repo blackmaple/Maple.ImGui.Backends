@@ -19,7 +19,7 @@ namespace Maple.ImGui.Backends.D3D10
         COM_PTR_IUNKNOWN<ID3D10DeviceImp> ID3D10DevicePtr { get; set; } = D3D10DevicePtr;
 
 
-        public unsafe static D3D10BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, D3D10BackendHostedService hostedService)
+        public unsafe static D3D10BackendImp CreateImp(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, D3D10BackendService hostedService)
         {
             var hWnd = pSwapChain.GetOutputWindow();
             if (hWnd == nint.Zero)

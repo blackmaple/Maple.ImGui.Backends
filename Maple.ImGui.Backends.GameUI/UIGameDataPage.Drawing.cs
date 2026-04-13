@@ -8,7 +8,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 提供页面绘制过程中复用的图形与文本辅助方法。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private static string GetTwoLineText(string text, float maxWidth)
         {

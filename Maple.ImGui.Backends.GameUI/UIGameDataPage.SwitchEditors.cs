@@ -9,7 +9,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责 Switch 类型展示项的编辑器渲染与交互处理。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private static float GetSwitchDisplayEditorCardHeight(GameSwitchDisplayDTO attribute)
         {

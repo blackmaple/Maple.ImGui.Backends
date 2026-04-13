@@ -8,11 +8,11 @@ using System.Runtime.InteropServices;
 using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.Windows
 {
-    public abstract class Win32ImGuiBackendHostedService(
+    public abstract class Win32ImGuiBackendService(
         IGraphicsHookFactory hookFactory,
           WinMsgHookFactory winMsgHookFactory,
         ImGuiBackendBridgeCollection bridgeCollection,
-        IImGuiUIView view) : ImGuiBackendHostedService(hookFactory, bridgeCollection, view)
+        IImGuiUIView view) : ImGuiBackendService(hookFactory, bridgeCollection, view)
     {
         protected WinMsgHookFactory WinMsgHookFactory { get; } = winMsgHookFactory;
 

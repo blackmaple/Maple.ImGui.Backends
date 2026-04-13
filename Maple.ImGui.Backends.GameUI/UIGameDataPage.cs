@@ -8,7 +8,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 游戏作弊页面的核心宿主，维护页面状态并驱动各个 UI/业务分区。
     /// </summary>
-    public partial class UIGameCheatPage(ILogger<UIGameCheatPage> logger, IGameDataService service) : IImGuiUIView
+    public partial class UIGameDataPage(ILogger<UIGameDataPage> logger, IGameDataService service) : IImGuiUIView
     {
         public ILogger Logger { get; } = logger;
         public TryDrawImageDelegate? TryDrawImage { set; get; }

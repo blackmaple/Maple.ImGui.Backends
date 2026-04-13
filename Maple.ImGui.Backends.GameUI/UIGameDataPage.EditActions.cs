@@ -8,7 +8,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责编辑动作的触发、查询与提交。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private void HandleEditButtonClick<TDisplay>(TDisplay item) where TDisplay : GameDisplayDTO
         {

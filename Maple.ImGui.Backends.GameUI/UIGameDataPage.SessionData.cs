@@ -6,7 +6,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责会话列表数据的加载、刷新、筛选与排序。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private static TDisplay[] FilterDisplays<TDisplay>(TDisplay[] items, string searchText) where TDisplay : GameDisplayDTO
         {

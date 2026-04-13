@@ -7,7 +7,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 集中管理页面公共 UI 样式常量与样式辅助。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private const float PopupDialogWindowRounding = 14.0f;
         private const float PopupDialogBorderSize = 1.0f;

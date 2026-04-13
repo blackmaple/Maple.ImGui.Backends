@@ -3,7 +3,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 集中管理页面中的用户可见文案，默认使用英文，便于后续扩展多语言。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private static readonly IReadOnlyDictionary<string, string> UiTextMap = new Dictionary<string, string>(StringComparer.Ordinal)
         {

@@ -7,7 +7,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责页面标题栏与顶部标签切换区域的绘制。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private void RenderSessionTitleBar(ref bool isOpen)
         {

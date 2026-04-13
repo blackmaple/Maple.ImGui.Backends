@@ -22,7 +22,7 @@ namespace Maple.ImGui.Backends.D3D9
         COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> ID3D9DevicePtr { get; set; } = D3D9DevicePtr;
 
 
-        public unsafe static D3D9BackendImp CreateImp(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> pDevice, D3D9BackendHostedService hostedService)
+        public unsafe static D3D9BackendImp CreateImp(COM_PTR_IUNKNOWN<IDirect3DDevice9Imp> pDevice, D3D9BackendService hostedService)
         {
             var hWnd = pDevice.GetFocusWindow();
             if (hWnd == nint.Zero)

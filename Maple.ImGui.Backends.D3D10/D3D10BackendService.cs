@@ -6,11 +6,11 @@ using Maple.RenderSpy.Graphics.DXGI.HOOK_DXGISwapChain;
 using Maple.RenderSpy.Graphics.Windows.COM;
 namespace Maple.ImGui.Backends.D3D10
 {
-    public sealed class D3D10BackendHostedService : Win32ImGuiBackendHostedService
+    public sealed class D3D10BackendService : Win32ImGuiBackendService
     {
         DXGIPresentHookItem HookItem { get; }
 
-        public D3D10BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
+        public D3D10BackendService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
             : base(hookFactory, winMsgHookFactory, bridgeCollection, view)
         {
 

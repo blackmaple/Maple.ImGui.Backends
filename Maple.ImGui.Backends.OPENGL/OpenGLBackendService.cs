@@ -4,14 +4,14 @@ using Maple.RenderSpy.Graphics;
 using Maple.RenderSpy.Graphics.OPENGL;
 namespace Maple.ImGui.Backends.OPENGL
 {
-    public class OpenGLBackendHostedService : Win32ImGuiBackendHostedService
+    public class OpenGLBackendService : Win32ImGuiBackendService
     {
 
 
  
         OPENGLwglSwapBuffersHookItem HookItem { get; set; }
 
-        public OpenGLBackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
+        public OpenGLBackendService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
             : base(hookFactory, winMsgHookFactory, bridgeCollection,view)
         {
 

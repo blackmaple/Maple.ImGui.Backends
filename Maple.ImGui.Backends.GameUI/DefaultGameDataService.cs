@@ -1,5 +1,6 @@
 using Maple.MonoGameAssistant.GameDTO;
 using Maple.MonoGameAssistant.Model;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Maple.ImGui.Backends.GameUI
 {
@@ -24,13 +25,9 @@ namespace Maple.ImGui.Backends.GameUI
                 var data = await this.Controllers.AddMonsterMemberAsync(new GameMonsterObjectDTO() { Session = gameSessionInfo.ObjectId, MonsterObject = monsterObject }).ConfigureAwait(false);
                 return MonoResultDTO.GetOk(data);
             }
-            catch (MonoCommonException ex)
-            {
-                return MonoResultDTO.GetBizError<GameCharacterSkillDTO>(ex);
-            }
             catch (Exception ex)
             {
-                return MonoResultDTO.GetSystemError<GameCharacterSkillDTO>(ex.Message);
+                return GetErrorResult<GameCharacterSkillDTO>(ex);
             }
         }
 
@@ -291,6 +288,19 @@ namespace Maple.ImGui.Backends.GameUI
             catch (Exception ex)
             {
                 return GetErrorResult<GameSwitchDisplayDTO>(ex);
+            }
+        }
+    }
+
+
+    public static class DefaultGameDataExtensions
+    {
+        extension(IServiceCollection @this)
+        {
+            public IServiceCollection AddDefaultGameData()
+            {
+                @this.AddSingleton<IGameDataService, DefaultGameDataService>();
+                return @this;
             }
         }
     }

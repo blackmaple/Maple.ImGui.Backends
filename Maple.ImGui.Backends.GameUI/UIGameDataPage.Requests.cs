@@ -6,7 +6,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责处理页面异步请求结果与消息通知。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private void UpdateAsyncRequests()
         {

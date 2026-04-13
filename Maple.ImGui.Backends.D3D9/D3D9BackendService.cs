@@ -7,13 +7,13 @@ using Maple.RenderSpy.Graphics.Windows.COM;
 using Maple.UnmanagedExtensions;
 namespace Maple.ImGui.Backends.D3D9
 {
-    public sealed class D3D9BackendHostedService : Win32ImGuiBackendHostedService
+    public sealed class D3D9BackendService : Win32ImGuiBackendService
     {
      
         D3D9EndSceneHookItem EndSceneHookItem { get; set; }
         D3D9ResetHookItem ResetHookItem { get; set; }
 
-        public D3D9BackendHostedService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
+        public D3D9BackendService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
          : base(hookFactory, winMsgHookFactory, bridgeCollection, view)
         {
 

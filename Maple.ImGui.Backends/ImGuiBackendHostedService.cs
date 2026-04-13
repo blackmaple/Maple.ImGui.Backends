@@ -3,10 +3,10 @@ using Microsoft.Extensions.Hosting;
 
 namespace Maple.ImGui.Backends
 {
-    public abstract class ImGuiBackendHostedService(
+    public abstract class ImGuiBackendService(
         IGraphicsHookFactory hookFactory,
         ImGuiBackendBridgeCollection bridgeCollection,
-        IImGuiUIView view) : IHostedService
+        IImGuiUIView view)  
     {
        
         public IGraphicsHookFactory GraphicsHookFactory { get; } = hookFactory;

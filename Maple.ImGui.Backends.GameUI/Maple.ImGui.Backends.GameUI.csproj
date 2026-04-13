@@ -13,7 +13,7 @@
 		<Description>dotNet ImGui Backends GameUI</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>hook;c#;dotnet;AOT</PackageTags>
-		<Version>0.26.0411.01-rc</Version>
+		<Version>0.26.0413.01-rc</Version>
 	</PropertyGroup>
 
 
@@ -30,7 +30,7 @@
 	
 	
 	<ItemGroup>
-		<PackageReference Include="Maple.MonoGameAssistant.GameDTO" Version="1.3.5-rc" />
+		<PackageReference Include="Maple.MonoGameAssistant.GameDTO" Version="1.5.0-rc" />
 		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
 	</ItemGroup>
 	<ItemGroup>

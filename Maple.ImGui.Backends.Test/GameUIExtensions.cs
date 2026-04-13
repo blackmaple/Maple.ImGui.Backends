@@ -15,7 +15,7 @@ namespace Maple.ImGui.Backends.GameUI
             //   EnsureRenderSpyAssembliesLoaded();
             @this.AddDefaultWin32InputBridge();
             @this.AddBridgeCollection();
-            @this.AddSingleton<IImGuiUIView, UIGameCheatPage>();
+            @this.AddSingleton<IImGuiUIView, UIGameDataPage>();
 
             //     @this.AddHostedService<D3D11BackendHostedService>();
 
@@ -36,9 +36,9 @@ namespace Maple.ImGui.Backends.GameUI
             //   EnsureRenderSpyAssembliesLoaded();
             @this.AddDefaultWin32InputBridge();
             @this.AddBridgeCollection();
-            @this.AddSingleton<IImGuiUIView, UIGameCheatPage>();
+            @this.AddSingleton<IImGuiUIView, UIGameDataPage>();
 
-            @this.AddHostedService<D3D11BackendHostedService>();
+            @this.AddSingleton<D3D11BackendService>();
 
 
             @this.AddWinMsgHookFactory();

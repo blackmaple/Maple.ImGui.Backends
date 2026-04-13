@@ -5,7 +5,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 定义页面运行所需的状态对象、结果对象与内部模型。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         /// <summary>
         /// 表示货币编辑弹窗当前绑定的数据上下文。

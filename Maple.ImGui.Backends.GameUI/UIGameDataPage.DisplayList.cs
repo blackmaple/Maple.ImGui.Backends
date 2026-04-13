@@ -10,7 +10,7 @@ namespace Maple.ImGui.Backends.GameUI
     /// <summary>
     /// 负责列表工具栏、卡片列表和搜索展示区域的绘制。
     /// </summary>
-    public partial class UIGameCheatPage
+    public partial class UIGameDataPage
     {
         private void RenderDisplayTabContent<TDisplay>(string tabName, TDisplay[] items, SearchState searchState) where TDisplay : GameDisplayDTO
         {

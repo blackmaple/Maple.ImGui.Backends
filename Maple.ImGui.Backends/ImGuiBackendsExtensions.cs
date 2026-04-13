@@ -14,9 +14,9 @@ namespace Maple.ImGui.Backends
             public IServiceCollection AddPlatformInputBridge<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
                 where T : class, IImGuiPlatformInputBridge
                 => @this.AddSingleton<IImGuiPlatformInputBridge, T>();
-            public IServiceCollection AddBackendHostedService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
-                where T : ImGuiBackendHostedService
-                => @this.AddHostedService<T>();
+            public IServiceCollection AddBackendService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
+                where T : ImGuiBackendService
+                => @this.AddSingleton<T>();
             public IServiceCollection AddImGuiUIView<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
                 where T : class,IImGuiUIView
                 => @this.AddSingleton<IImGuiUIView,T>();
