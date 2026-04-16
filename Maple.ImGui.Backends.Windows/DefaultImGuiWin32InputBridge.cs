@@ -156,7 +156,7 @@ namespace Maple.ImGui.Backends.Windows
                     byteCount = Encoding.UTF8.GetByteCount(charBuffer, 0, realCopied);
                     byte[] byteBuffer = RentBytes(byteCount + 2);
                     int written = Encoding.UTF8.GetBytes(charBuffer, 0, realCopied, byteBuffer, 0);
-                    Debug.WriteLine(Encoding.UTF8.GetString(byteBuffer.AsSpan(0, written)));
+                //    Debug.WriteLine(Encoding.UTF8.GetString(byteBuffer.AsSpan(0, written)));
                     ImGuiApi.GetIO().AddInputCharactersUTF8(byteBuffer.AsSpan(0, written));
 
                     return true;

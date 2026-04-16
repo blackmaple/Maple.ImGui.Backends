@@ -15,15 +15,26 @@ namespace Maple.ImGui.Backends
     /// </summary>
     public interface IImGuiUIView
     {
-        
+
 
         void RaiseRender();
 
         /// <summary>
         /// bool TryDrawImage(string? category, string objectId) => false;
         /// </summary>
-          TryDrawImageDelegate? TryDrawImage { get; set; }  
+        TryDrawImageDelegate? TryDrawImage { get; set; }
 
-        bool ShowSessionWindow { get; }
+        bool SessionWindowVisible { get; }
+        bool EnabledDraw { get; set; }
+
+
+        public void ShowOrHide()
+        {
+            if (SessionWindowVisible)
+            {
+                return;
+            }
+            EnabledDraw = !EnabledDraw;
+        }
     }
 }

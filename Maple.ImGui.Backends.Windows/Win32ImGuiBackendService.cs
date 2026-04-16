@@ -5,6 +5,8 @@ using Maple.RenderSpy.Graphics;
 using Maple.UnmanagedExtensions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.Windows
 {
@@ -25,6 +27,7 @@ namespace Maple.ImGui.Backends.Windows
             }
 
             var io = ImGuiApi.GetIO();
+            io.IniFilename = default;
             if (this.BridgeCollection.UnityInputBridge is not null)
             {
                 io.UserData = this.BridgeCollection.Handle.ToPointer();
@@ -37,6 +40,9 @@ namespace Maple.ImGui.Backends.Windows
             var winMsgHookItem = this.WinMsgHookFactory.CreateRequiresNew(hWnd);
             winMsgHookItem.SyncCallback += WinProcCallback;
             winMsgHookItem.EnabledSyncCallback = true;
+            winMsgHookItem.AdditionalContent.Set(nameof(ImGuiBackendBridgeCollection), this.BridgeCollection);
+            winMsgHookItem.AdditionalContent.Set(nameof(IImGuiUIView), this.View);
+
             winMsgHookItem.Start();
             return true;
         }
@@ -56,7 +62,14 @@ namespace Maple.ImGui.Backends.Windows
 
         private static bool WinProcCallback(nint hWnd, uint uMsg, nuint w, nint l, WinMsgHookItem hooItem)
         {
-
+            if (uMsg == PInvoke.WM_KEYDOWN &&  w == (nuint)VIRTUAL_KEY.VK_HOME)
+            {
+                if (hooItem.AdditionalContent.TryGet<IImGuiUIView>(nameof(IImGuiUIView), out var view))
+                {
+                    view.ShowOrHide();
+                }
+            }
+           
             if (hooItem.AdditionalContent.TryGet<ImGuiBackendBridgeCollection>(nameof(ImGuiBackendBridgeCollection), out var bridgeCollection))
             {
                 if (bridgeCollection.PlatformInputBridge?.TryHandleImeComposition(hWnd, uMsg, w, l) == true)

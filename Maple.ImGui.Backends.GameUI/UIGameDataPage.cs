@@ -29,8 +29,10 @@ namespace Maple.ImGui.Backends.GameUI
         private readonly ImGuiAsyncRequest<AsyncFetchResult<string>> _currencyUpdateRequest = new();
         private readonly ImGuiAsyncRequest<AsyncFetchResult<string>> _inventoryUpdateRequest = new();
 
+        public bool EnabledDraw { get; set; } = true;
+        public bool SessionWindowVisible => ShowSessionWindow;
         bool LauncherVisible { get; set; } = true;
-        public bool ShowSessionWindow { get; set; }
+        bool ShowSessionWindow { get; set; }
         SessionTab SelectedSessionTab { get; set; } = SessionTab.Currency;
         SessionTab? ReloadingTab { get; set; }
         GameSessionInfoDTO? GameSessionInfo { get; set; }
@@ -85,6 +87,10 @@ namespace Maple.ImGui.Backends.GameUI
         {
             try
             {
+                if (!EnabledDraw)
+                {
+                    return;
+                }
                 ApplyUiScale();
                 UpdateMouseCursorVisibility();
                 UpdateAsyncRequests();
