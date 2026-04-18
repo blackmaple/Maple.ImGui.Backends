@@ -6,6 +6,7 @@ using Maple.UnmanagedExtensions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32;
+using Windows.Win32.UI.Input.Ime;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.Windows
@@ -18,7 +19,7 @@ namespace Maple.ImGui.Backends.Windows
     {
         protected WinMsgHookFactory WinMsgHookFactory { get; } = winMsgHookFactory;
 
-        public unsafe bool InitPlatform(ImGuiContextPtr imguiContext,nint hWnd)
+        public unsafe bool InitPlatform(ImGuiContextPtr imguiContext, nint hWnd)
         {
             ImGuiImplWin32.SetCurrentContext(imguiContext);
             if (!ImGuiImplWin32.Init(hWnd.ToPointer()))
@@ -62,23 +63,26 @@ namespace Maple.ImGui.Backends.Windows
 
         private static bool WinProcCallback(nint hWnd, uint uMsg, nuint w, nint l, WinMsgHookItem hooItem)
         {
-            if (uMsg == PInvoke.WM_KEYDOWN &&  w == (nuint)VIRTUAL_KEY.VK_HOME)
+            if (uMsg == PInvoke.WM_KEYDOWN && w == (nuint)VIRTUAL_KEY.VK_END)
             {
                 if (hooItem.AdditionalContent.TryGet<IImGuiUIView>(nameof(IImGuiUIView), out var view))
                 {
-                    view.ShowOrHide();
+                    view.SwitchDraw();
                 }
             }
-           
-            if (hooItem.AdditionalContent.TryGet<ImGuiBackendBridgeCollection>(nameof(ImGuiBackendBridgeCollection), out var bridgeCollection))
+            else if (uMsg == PInvoke.WM_IME_COMPOSITION && ((uint)l & (uint)IME_COMPOSITION_STRING.GCS_RESULTSTR) != 0)
             {
-                if (bridgeCollection.PlatformInputBridge?.TryHandleImeComposition(hWnd, uMsg, w, l) == true)
+                if (hooItem.AdditionalContent.TryGet<ImGuiBackendBridgeCollection>(nameof(ImGuiBackendBridgeCollection), out var bridgeCollection))
                 {
-                    return true;
+                    if (bridgeCollection.PlatformInputBridge?.TryHandleImeComposition(hWnd, uMsg, w, l) == true)
+                    {
+                        return true;
+                    }
                 }
             }
+
             return nint.Zero != ImGuiImplWin32.WndProcHandler(hWnd, uMsg, w, l);
         }
     }
-    
+
 }

@@ -30,7 +30,7 @@ namespace Maple.ImGui.Backends.GameUI
         /// <summary>
         /// 表示角色技能加减操作的待确认上下文。
         /// </summary>
-        private sealed record CharacterSkillActionConfirmState(string? ModifyCategory, string OldSkill, string NewSkill, string DisplayName, bool IsAdd);
+        private sealed record CharacterSkillActionConfirmState(string? ModifyCategory, string OldSkill, string NewSkill, string DisplayName, string? DisplayImage, bool IsAdd);
 
         /// <summary>
         /// 表示怪物详情窗口当前绑定的数据上下文。
@@ -40,12 +40,12 @@ namespace Maple.ImGui.Backends.GameUI
         /// <summary>
         /// 表示怪物加入成员操作的待确认上下文。
         /// </summary>
-        private sealed record MonsterAddConfirmState(GameMonsterDisplayDTO Monster, string DisplayName, string DisplayDesc);
+        private sealed record MonsterAddConfirmState(GameMonsterDisplayDTO Monster, string DisplayName, string DisplayDesc );
 
         /// <summary>
         /// 表示角色技能选择窗口中的统一展示项。
         /// </summary>
-        private sealed record CharacterSkillSelectorItem(string? ObjectId, string? DisplayCategory, string? DisplayName, string? DisplayDesc);
+        private sealed record CharacterSkillSelectorItem(string ObjectId, string? DisplayCategory, string? DisplayName, string? DisplayDesc, string? DisplayImage);
 
         /// <summary>
         /// 表示主界面 Switch 展示项更新后的结果上下文。

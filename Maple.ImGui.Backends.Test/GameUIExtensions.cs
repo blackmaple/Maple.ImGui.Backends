@@ -24,7 +24,7 @@ namespace Maple.ImGui.Backends.GameUI
             @this.AddD3D11FunctionsProvider();
 
             @this.AddWindowsGraphicsHookFactory(true);
-             @this.AddDobbyHookDynamicFactory("Dobby.dll");
+            @this.AddDobbyHookDynamicFactory("Dobby.dll");
             //  @this.AddDobbyHookDynamicFactory();
             return @this;
         }
@@ -45,7 +45,7 @@ namespace Maple.ImGui.Backends.GameUI
             @this.AddD3D11FunctionsProvider();
 
             @this.AddWindowsGraphicsHookFactory();
-           @this.AddDobbyHookDynamicFactory("Dobby.dll");
+            @this.AddDobbyHookDynamicFactory("Dobby.dll");
             //     @this.AddDobbyHookNativeFactory();
             return @this;
         }

@@ -12,22 +12,25 @@ namespace Maple.ImGui.Backends.GameUI
     /// </summary>
     public partial class UIGameDataPage
     {
-        private void RenderDisplayTabContent<TDisplay>(string tabName, TDisplay[] items, SearchState searchState) where TDisplay : GameDisplayDTO
+        private const float GridCardVerticalSpacing = 16.0f;
+        private const float GridBottomPadding = 16.0f;
+
+        private void RenderDisplayTabContent<TDisplay>(string tabName, TDisplay[] items, SearchState searchState) where TDisplay : GameObjectDisplayDTO
         {
             RenderTabToolbar(tabName, searchState);
             var filteredItems = SortDisplays(FilterDisplays(items, searchState.AppliedText));
-            if (typeof(TDisplay) == typeof(GameInventoryDisplayDTO))
+            if (filteredItems is GameInventoryDisplayDTO[] inventoryItems)
             {
-                RenderInventoryDisplayCards((GameInventoryDisplayDTO[])(object)filteredItems);
+                RenderInventoryDisplayCards(inventoryItems);
                 return;
             }
 
             RenderDisplayGridCards(tabName, filteredItems);
         }
 
-        private void RenderDisplayGridCards<TDisplay>(string tabName, TDisplay[] items) where TDisplay : GameDisplayDTO
+        private void RenderDisplayGridCards<TDisplay>(string tabName, TDisplay[] items) where TDisplay : GameObjectDisplayDTO
         {
-            const float cardSpacing = 12.0f;
+            const float cardSpacing = GridCardVerticalSpacing;
 
             var childSize = ImGuiApi.GetContentRegionAvail();
             var gridWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
@@ -40,8 +43,8 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             var cardWidth = GetInventoryCardWidth(childSize.X);
-            var gridCardHeight = typeof(TDisplay) == typeof(GameSwitchDisplayDTO)
-                ? MathF.Max(112.0f, items.Cast<GameSwitchDisplayDTO>().Select(GetSwitchDisplayEditorCardHeight).DefaultIfEmpty(112.0f).Max())
+            var gridCardHeight = items is GameSwitchDisplayDTO[] switchItems
+                ? MathF.Max(112.0f, switchItems.Select(GetSwitchDisplayEditorCardHeight).DefaultIfEmpty(112.0f).Max())
                 : 112.0f;
             var cardHeight = gridCardHeight;
             var rowHeight = cardHeight + cardSpacing;
@@ -77,13 +80,14 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             clipper.End();
+            ImGuiApi.Dummy(new Vector2(0.0f, GridBottomPadding));
             ImGuiApi.EndChild();
             ImGuiApi.PopStyleColor();
         }
 
         private void RenderMonsterDisplayCards(GameMonsterDisplayDTO[] items)
         {
-            const float cardSpacing = 12.0f;
+            const float cardSpacing = GridCardVerticalSpacing;
 
             var childSize = ImGuiApi.GetContentRegionAvail();
             var gridWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
@@ -130,13 +134,14 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             clipper.End();
+            ImGuiApi.Dummy(new Vector2(0.0f, GridBottomPadding));
             ImGuiApi.EndChild();
             ImGuiApi.PopStyleColor();
         }
 
         private void RenderInventoryDisplayCards(GameInventoryDisplayDTO[] items)
         {
-            const float inventoryCardSpacing = 12.0f;
+            const float inventoryCardSpacing = GridCardVerticalSpacing;
 
             var childSize = ImGuiApi.GetContentRegionAvail();
             var gridWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
@@ -201,19 +206,20 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             clipper.End();
+            ImGuiApi.Dummy(new Vector2(0.0f, GridBottomPadding));
 
             ImGuiApi.EndChild();
             ImGuiApi.PopStyleColor();
         }
 
-        private void RenderInventoryDisplayCard(GameDisplayDTO item, int index, Vector2 cardSize)
+        private void RenderInventoryDisplayCard(GameObjectDisplayDTO item, int index, Vector2 cardSize)
         {
             var allowCardInteraction = !IsEditDialogBlockingInput();
             const float cardControlMargin = 6.0f;
-       //     const float imageColumnWidth = 62.0f;
+            //     const float imageColumnWidth = 62.0f;
             const float textStartX = 76.0f;
             var switchDisplay = item as GameSwitchDisplayDTO;
-            var objectDisplay = item as GameObjectDisplayDTO;
+            var objectDisplay = item;// as GameObjectDisplayDTO;
             var monsterDisplay = item as GameMonsterDisplayDTO;
             var textColumnWidth = switchDisplay is null
                 ? MathF.Max(1.0f, cardSize.X - textStartX - 50.0f)
@@ -232,12 +238,11 @@ namespace Maple.ImGui.Backends.GameUI
             var cardPos = ImGuiApi.GetWindowPos();
             var isCardHovered = allowCardInteraction && ImGuiApi.IsMouseHoveringRect(cardPos, cardPos + cardSize);
             var cardCategory = switchDisplay is null
-                ? (string.IsNullOrWhiteSpace(objectDisplay?.DisplayCategory) ? GetUiText("Text.Inventory") : objectDisplay.DisplayCategory)
+                ? (string.IsNullOrWhiteSpace(objectDisplay.DisplayCategory) ? GetUiText("Text.Inventory") : objectDisplay.DisplayCategory)
                 : GetUiText("Text.Misc");
-            var visibleCardCategory = switchDisplay is null ? cardCategory : string.Empty;
             var thumbnailSize = new Vector2(48.0f, 48.0f);
             var thumbnailMin = cardPos + new Vector2(14.0f, 14.0f);
-            RenderCardThumbnail(thumbnailMin, thumbnailSize, switchDisplay is null ? objectDisplay?.DisplayCategory : cardCategory, item.ObjectId);
+            RenderCardThumbnail(thumbnailMin, thumbnailSize, objectDisplay.DisplayCategory, item.ObjectId, objectDisplay.DisplayImage);
 
             if (monsterDisplay is not null)
             {
@@ -295,7 +300,7 @@ namespace Maple.ImGui.Backends.GameUI
                 ImGuiApi.PopStyleColor();
             }
 
-            RenderInventoryCardTextBlock(visibleCardCategory, item.DisplayName ?? string.Empty, cardPos, textStartX, textColumnWidth, switchDisplay is not null);
+            RenderInventoryCardTextBlock(switchDisplay is null ? cardCategory : string.Empty, item.DisplayName ?? string.Empty, cardPos, textStartX, textColumnWidth, switchDisplay is not null);
 
             if (allowCardInteraction && isCardHovered)
             {
@@ -591,7 +596,7 @@ namespace Maple.ImGui.Backends.GameUI
             PopIconButtonStyle();
         }
 
-        private void RenderDisplayCards<TDisplay>(string tabName, TDisplay[] items) where TDisplay : GameDisplayDTO
+        private void RenderDisplayCards<TDisplay>(string tabName, TDisplay[] items) where TDisplay : GameObjectDisplayDTO
         {
             var childSize = ImGuiApi.GetContentRegionAvail();
             var listWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
@@ -627,9 +632,9 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.EndChild();
         }
 
-        private void RenderDisplayCard<TDisplay>(string tabName, TDisplay item, int index, float availableWidth) where TDisplay : GameDisplayDTO
+        private void RenderDisplayCard<TDisplay>(string tabName, TDisplay item, int index, float availableWidth) where TDisplay : GameObjectDisplayDTO
         {
-            var objectDisplay = item as GameObjectDisplayDTO;
+            var objectDisplay = item;//as GameObjectDisplayDTO;
             var switchDisplay = item as GameSwitchDisplayDTO;
             var characterDisplay = item as GameCharacterDisplayDTO;
             var allowCardInteraction = !IsEditDialogBlockingInput();
@@ -661,11 +666,11 @@ namespace Maple.ImGui.Backends.GameUI
             var textRightBoundary = cardWidth - 16.0f;
             var textWidth = MathF.Max(1.0f, textRightBoundary - textStartX - 12.0f);
             var cardCategory = switchDisplay is null
-                ? (string.IsNullOrWhiteSpace(objectDisplay?.DisplayCategory) ? tabName : objectDisplay.DisplayCategory)
+                ? (string.IsNullOrWhiteSpace(objectDisplay.DisplayCategory) ? tabName : objectDisplay.DisplayCategory)
                 : GetUiText("Text.Misc");
             var visibleCardCategory = switchDisplay is null ? cardCategory : string.Empty;
 
-            RenderCardThumbnail(iconMin, compactThumbnailSize, switchDisplay is null ? objectDisplay?.DisplayCategory : GetUiText("Text.Misc"), item.ObjectId);
+            RenderCardThumbnail(iconMin, compactThumbnailSize, objectDisplay.DisplayCategory, item.ObjectId, objectDisplay.DisplayImage);
 
             RenderInventoryCardTextBlock(visibleCardCategory, item.DisplayName ?? string.Empty, windowPos, textStartX, textWidth, switchDisplay is not null);
 

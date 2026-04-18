@@ -60,9 +60,10 @@ namespace Maple.ImGui.Backends.GameUI
 
             OpenCharacterSkillActionConfirm(
                 skill.DisplayCategory,
-                skill.ObjectId ?? string.Empty,
+                skill.ObjectId,
                 string.Empty,
                 skill.DisplayName ?? skill.ObjectId ?? GetUiText("Text.Skill"),
+                skill.DisplayImage,
                 false);
         }
 
@@ -84,8 +85,9 @@ namespace Maple.ImGui.Backends.GameUI
             OpenCharacterSkillActionConfirm(
                 skill.DisplayCategory,
                 string.Empty,
-                skill.ObjectId ?? string.Empty,
+                skill.ObjectId,
                 skill.DisplayName ?? skill.ObjectId ?? GetUiText("Text.Skill"),
+                skill.DisplayImage,
                 true);
         }
 
@@ -112,9 +114,9 @@ namespace Maple.ImGui.Backends.GameUI
             PendingOpenMonsterAddPopup = true;
         }
 
-        private void OpenCharacterSkillActionConfirm(string? modifyCategory, string oldSkill, string newSkill, string displayName, bool isAdd)
+        private void OpenCharacterSkillActionConfirm(string? modifyCategory, string oldSkill, string newSkill, string displayName, string? displayImage, bool isAdd)
         {
-            PendingCharacterSkillAction = new CharacterSkillActionConfirmState(modifyCategory, oldSkill, newSkill, displayName, isAdd);
+            PendingCharacterSkillAction = new CharacterSkillActionConfirmState(modifyCategory, oldSkill, newSkill, displayName, displayImage, isAdd);
             PendingOpenCharacterSkillActionPopup = true;
         }
 

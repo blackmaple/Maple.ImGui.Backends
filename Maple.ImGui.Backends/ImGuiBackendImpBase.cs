@@ -50,7 +50,7 @@ namespace Maple.ImGui.Backends
             GC.SuppressFinalize(this);
         }
 
-        protected unsafe bool TryDrawImage(string? category, string objectId)
+        protected unsafe bool TryDrawImage(string? category, string objectId,string? image)
         {
             var uintyInputBridge = this.BridgeCollection.UnityInputBridge;
             if (uintyInputBridge is null)

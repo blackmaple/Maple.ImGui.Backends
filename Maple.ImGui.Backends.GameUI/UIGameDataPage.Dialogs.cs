@@ -3,6 +3,7 @@ using Maple.MonoGameAssistant.GameDTO;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using ImGuiApi = Hexa.NET.ImGui.ImGui;
 
 namespace Maple.ImGui.Backends.GameUI
@@ -347,7 +348,7 @@ namespace Maple.ImGui.Backends.GameUI
             var addButtonPosition = new Vector2(cardWidth - CardActionButtonSize - cardControlMargin, cardHeight - CardActionButtonSize - cardControlMargin);
             var removeButtonPosition = addButtonPosition - new Vector2(CardActionButtonSize + CardActionButtonSpacing, 0.0f);
 
-            RenderCardThumbnail(iconMin, new Vector2(48.0f, 48.0f), item.DisplayCategory, item.ObjectId);
+            RenderCardThumbnail(iconMin, new Vector2(48.0f, 48.0f), item.DisplayCategory, item.ObjectId, item.DisplayImage);
             RenderInventoryCardTextBlock(cardCategory, item.DisplayName ?? string.Empty, windowPos, textStartX, textWidth);
 
             var canEdit = allowCardInteraction && item.CanWrite && !_characterSkillUpdateRequest.IsRunning;
@@ -538,8 +539,9 @@ namespace Maple.ImGui.Backends.GameUI
                 : GetUiText("Dialog.Skill.ConfirmRemove", PendingCharacterSkillAction.DisplayName);
             RenderEditDialogHeaderCard(
                 "CharacterSkillActionConfirm",
-                null,
+                PendingCharacterSkillAction.NewSkill,
                 PendingCharacterSkillAction.ModifyCategory,
+                PendingCharacterSkillAction.DisplayImage,
                 PendingCharacterSkillAction.DisplayName,
                 prompt);
 
@@ -659,6 +661,7 @@ namespace Maple.ImGui.Backends.GameUI
                 "MonsterAddConfirm",
                 PendingMonsterAddAction.Monster.ObjectId,
                 PendingMonsterAddAction.Monster.DisplayCategory,
+                PendingMonsterAddAction.Monster.DisplayImage,
                 PendingMonsterAddAction.DisplayName,
                 string.IsNullOrWhiteSpace(monsterDesc)
                     ? GetUiText("Dialog.Monster.AddConfirm", PendingMonsterAddAction.DisplayName)
@@ -774,7 +777,7 @@ namespace Maple.ImGui.Backends.GameUI
             {
                 var drawList = ImGuiApi.GetWindowDrawList();
                 var cardPos = ImGuiApi.GetWindowPos();
-                RenderCardThumbnail(cardPos + new Vector2(14.0f, 14.0f), new Vector2(48.0f, 48.0f), null, attribute.ObjectId);
+             //   RenderCardThumbnail(cardPos + new Vector2(14.0f, 14.0f), new Vector2(48.0f, 48.0f), null, attribute.ObjectId);
                 RenderInventoryCardTextBlock(GetUiText("Dialog.Monster.Category.Attributes"), attribute.DisplayName ?? string.Empty, cardPos, 76.0f, MathF.Max(1.0f, cardWidth - 92.0f));
                 var displayValue = attribute.DisplayValue ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(displayValue))
@@ -824,7 +827,7 @@ namespace Maple.ImGui.Backends.GameUI
             {
                 var drawList = ImGuiApi.GetWindowDrawList();
                 var cardPos = ImGuiApi.GetWindowPos();
-                RenderCardThumbnail(cardPos + new Vector2(14.0f, 14.0f), new Vector2(48.0f, 48.0f), skillInfo.DisplayCategory, skillInfo.ObjectId);
+                RenderCardThumbnail(cardPos + new Vector2(14.0f, 14.0f), new Vector2(48.0f, 48.0f), skillInfo.DisplayCategory, skillInfo.ObjectId, skillInfo.DisplayImage);
                 RenderInventoryCardTextBlock(GetUiText("Dialog.Monster.Category.Skill"), skillInfo.DisplayName ?? string.Empty, cardPos, 76.0f, MathF.Max(1.0f, cardWidth - 92.0f));
                 var tooltipDesc = GetPlainText(skillInfo.DisplayDesc);
                 if (!string.IsNullOrWhiteSpace(tooltipDesc))
@@ -881,7 +884,7 @@ namespace Maple.ImGui.Backends.GameUI
 
             if (items.Length > 0)
             {
-                RenderCharacterSkillSelectorGridCards([.. items.Select(static item => new CharacterSkillSelectorItem(item.ObjectId, item.DisplayCategory, item.DisplayName, item.DisplayDesc))]);
+            RenderCharacterSkillSelectorGridCards([.. items.Select(static item => new CharacterSkillSelectorItem(item.ObjectId, item.DisplayCategory, item.DisplayName, item.DisplayDesc, item.DisplayImage))]);
                 return;
             }
 
@@ -899,7 +902,7 @@ namespace Maple.ImGui.Backends.GameUI
                 return;
             }
 
-            RenderCharacterSkillSelectorGridCards([.. fallbackItems.Select(static item => new CharacterSkillSelectorItem(item.ObjectId, item.DisplayCategory, item.DisplayName, item.DisplayDesc))]);
+            RenderCharacterSkillSelectorGridCards([.. fallbackItems.Select(static item => new CharacterSkillSelectorItem(item.ObjectId, item.DisplayCategory, item.DisplayName, item.DisplayDesc, item.DisplayImage))]);
         }
 
         private void RenderCharacterSkillSelectorToolbar(SearchState searchState)
@@ -1022,7 +1025,7 @@ namespace Maple.ImGui.Backends.GameUI
             var textWidth = MathF.Max(1.0f, textRightBoundary - textStartX - 12.0f);
             var addButtonPosition = new Vector2(cardWidth - CardActionButtonSize - cardControlMargin, cardHeight - CardActionButtonSize - cardControlMargin);
 
-            RenderCardThumbnail(iconMin, new Vector2(48.0f, 48.0f), item.DisplayCategory, item.ObjectId);
+            RenderCardThumbnail(iconMin, new Vector2(48.0f, 48.0f), item.DisplayCategory, item.ObjectId, item.DisplayImage);
             RenderInventoryCardTextBlock(cardCategory, item.DisplayName ?? string.Empty, windowPos, textStartX, textWidth);
 
             if (RenderSkillActionButton($"##AddSelectedSkill_{item.ObjectId}_{index}", addButtonPosition, true, allowCardInteraction && !_characterSkillUpdateRequest.IsRunning))
@@ -1102,7 +1105,7 @@ namespace Maple.ImGui.Backends.GameUI
                 return;
             }
 
-            RenderEditDialogHeaderCard("CurrencyEdit", EditingCurrency.Info.ObjectId, EditingCurrency.Category, EditingCurrency.DisplayName, EditingCurrency.DisplayDesc);
+            RenderEditDialogHeaderCard("CurrencyEdit", EditingCurrency.Info.ObjectId, EditingCurrency.Category, null, EditingCurrency.DisplayName, EditingCurrency.DisplayDesc);
 
             ImGuiApi.SetNextItemWidth(ImGuiApi.GetContentRegionAvail().X);
             PushEditorInputStyle();
@@ -1169,7 +1172,7 @@ namespace Maple.ImGui.Backends.GameUI
                 return;
             }
 
-            RenderEditDialogHeaderCard("InventoryEdit", EditingInventory.Info.ObjectId, EditingInventory.Category, EditingInventory.DisplayName, EditingInventory.DisplayDesc);
+            RenderEditDialogHeaderCard("InventoryEdit", EditingInventory.Info.ObjectId, EditingInventory.Category, null, EditingInventory.DisplayName, EditingInventory.DisplayDesc);
 
             ImGuiApi.SetNextItemWidth(ImGuiApi.GetContentRegionAvail().X);
             PushEditorInputStyle();
@@ -1201,20 +1204,17 @@ namespace Maple.ImGui.Backends.GameUI
             }
         }
 
-        private void RenderCardThumbnail(Vector2 min, Vector2 size, string? category, string? objectId)
+        private void RenderCardThumbnail(Vector2 min, Vector2 size, string? category, string objectId, string? image)
         {
-            if (!string.IsNullOrWhiteSpace(objectId))
+            var cursorPos = ImGuiApi.GetCursorPos();
+            ImGuiApi.SetCursorScreenPos(min);
+            if (TryDrawImage?.Invoke(category, objectId, image) == true)
             {
-                var cursorPos = ImGuiApi.GetCursorPos();
-                ImGuiApi.SetCursorScreenPos(min);
-                if (TryDrawImage?.Invoke(category, objectId) == true)
-                {
-                    ImGuiApi.SetCursorPos(cursorPos);
-                    return;
-                }
-
                 ImGuiApi.SetCursorPos(cursorPos);
+                return;
             }
+
+            ImGuiApi.SetCursorPos(cursorPos);
 
             DrawThumbnailPreview(min, size);
         }
@@ -1230,7 +1230,7 @@ namespace Maple.ImGui.Backends.GameUI
             drawList.AddRectFilled(new Vector2(min.X + 8.0f, min.Y + 49.0f), new Vector2(max.X - 16.0f, min.Y + 55.0f), ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.35f, 0.37f, 0.43f, 1.0f)), 3.0f);
         }
 
-        private void RenderEditDialogHeaderCard(string idSuffix, string? objectId, string? category, string title, string description)
+        private void RenderEditDialogHeaderCard(string idSuffix, string objectId, string? category, string? image, string title, string description)
         {
             const float thumbnailSize = 48.0f;
             var availableWidth = ImGuiApi.GetContentRegionAvail().X;
@@ -1241,7 +1241,7 @@ namespace Maple.ImGui.Backends.GameUI
             var descAreaHeight = (textLineHeight * 2.0f) + ImGuiApi.GetStyle().ItemSpacing.Y;
 
             var rowStart = ImGuiApi.GetCursorScreenPos();
-            RenderCardThumbnail(rowStart + new Vector2(14.0f, 0.0f), new Vector2(thumbnailSize, thumbnailSize), category, objectId);
+            RenderCardThumbnail(rowStart + new Vector2(14.0f, 0.0f), new Vector2(thumbnailSize, thumbnailSize), category, objectId, image);
             var drawList = ImGuiApi.GetWindowDrawList();
             if (!string.IsNullOrWhiteSpace(category))
             {

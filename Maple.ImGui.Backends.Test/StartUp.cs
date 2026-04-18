@@ -1,4 +1,5 @@
 ﻿using ImGui.App.D3D11;
+using Maple.ImGui.Backends.D3D11;
 using Maple.ImGui.Backends.GameUI;
 using Maple.MonoGameAssistant.GameCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +14,9 @@ services.AddHttpClient<GameHttpClientService>().ConfigurePrimaryHttpMessageHandl
 {
     AutomaticDecompression = System.Net.DecompressionMethods.Brotli,
     UseProxy = false,
-}).ConfigureHttpClient(p => p.BaseAddress = new Uri("http://localhost:29045"));
+}).ConfigureHttpClient(p => p.BaseAddress = new Uri("http://localhost:49123"));
 services.AddGameCheatPage();
 using var app = builder.Build();
-app.Run();
-//Console.ReadLine();
+await app.Services.GetRequiredService<D3D11BackendService>().StartAsync(default).ConfigureAwait(false);
+await app.RunAsync().ConfigureAwait(false);
+Console.ReadLine();

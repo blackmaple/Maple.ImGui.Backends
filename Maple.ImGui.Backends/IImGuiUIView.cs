@@ -8,7 +8,7 @@ namespace Maple.ImGui.Backends
     /// <param name="category"></param>
     /// <param name="objectId"></param>
     /// <returns></returns>
-    public delegate bool TryDrawImageDelegate(string? category, string objectId);
+    public delegate bool TryDrawImageDelegate(string? category, string objectId,string? image);
 
     /// <summary>
     /// 纯渲染接口，主要是为了让用户可以在不依赖特定平台输入桥接的情况下，单纯使用 ImGui 绘制功能，目前主要用于测试和调试，后续如果有其他需要单纯使用 ImGui 绘制功能的场景也可以使用这个接口
@@ -28,7 +28,7 @@ namespace Maple.ImGui.Backends
         bool EnabledDraw { get; set; }
 
 
-        public void ShowOrHide()
+        public void SwitchDraw()
         {
             if (SessionWindowVisible)
             {
