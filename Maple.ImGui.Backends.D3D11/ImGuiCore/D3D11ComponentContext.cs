@@ -2,6 +2,8 @@
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Device;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11DeviceContext;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11RenderTargetView;
+using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Resource;
+using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11ShaderResourceView;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Texture2D;
 using Maple.ImGui.Backends.DXGI.COM_DXGISwapChain;
 using Maple.ImGui.Backends.Windows.GraphicsCore.COM;
@@ -9,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Windows.Win32.Graphics.Direct3D;
 using Windows.Win32.Graphics.Direct3D11;
 using Windows.Win32.Graphics.Dxgi;
 
@@ -39,7 +42,6 @@ namespace Maple.ImGui.Backends.D3D11.ImGuiCore
                 this.ID3D11RenderTargetViewPtr = pRTV;
             }
         }
-
         public void SetRenderTarget(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain)
         {
             // 3. 绑定渲染目标
@@ -69,8 +71,37 @@ namespace Maple.ImGui.Backends.D3D11.ImGuiCore
             this.ID3D11RenderTargetViewPtr = default;
             if (pRenderTargetView) pRenderTargetView.Release();
         }
-
         public void WaitForGPU() => this.ID3D11DeviceContextPtr.Flush();
+
+
+        public bool TryCreateShaderResourceView(COM_PTR_IUNKNOWN<ID3D11ResourceImp> pResource, out COM_PTR_IUNKNOWN<ID3D11ShaderResourceViewImp> pSRView)
+        {
+            Unsafe.SkipInit(out pSRView);
+            if (!pResource.QueryInterface<ID3D11Texture2DImp>(in ID3D11Texture2DImp.GUID, out var pTexture2D))
+            {
+                return false;
+            }
+            using (pTexture2D)
+            {
+                pTexture2D.GetDesc(out var pDesc);
+                var srvDesc = new D3D11_SHADER_RESOURCE_VIEW_DESC()
+                {
+                    Format = pDesc.Format,
+                    ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D,
+                    Anonymous = new D3D11_SHADER_RESOURCE_VIEW_DESC._Anonymous_e__Union()
+                    {
+                        Texture2D = new D3D11_TEX2D_SRV()
+                        {
+                            MostDetailedMip = 0,
+                            MipLevels = pDesc.MipLevels,
+                        }
+                    }
+                };
+                return this.ID3D11DevicePtr.CreateShaderResourceView(pResource, srvDesc, out pSRView);
+            }
+        }
+
+
 
         public void Dispose()
         {

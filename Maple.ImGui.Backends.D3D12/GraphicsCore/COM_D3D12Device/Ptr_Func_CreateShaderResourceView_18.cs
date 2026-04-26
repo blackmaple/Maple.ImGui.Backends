@@ -20,10 +20,12 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, void*, global::Windows.Win32.Graphics.Direct3D12.D3D12_SHADER_RESOURCE_VIEW_DESC*, global::Windows.Win32.Graphics.Direct3D12.D3D12_CPU_DESCRIPTOR_HANDLE, void> CreateShaderResourceView_18;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, D3D12_SHADER_RESOURCE_VIEW_DESC*, D3D12_CPU_DESCRIPTOR_HANDLE, void> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, D3D12_SHADER_RESOURCE_VIEW_DESC*, D3D12_CPU_DESCRIPTOR_HANDLE, void>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, COM_PTR_IUNKNOWN, UnsafeIn<D3D12_SHADER_RESOURCE_VIEW_DESC>, D3D12_CPU_DESCRIPTOR_HANDLE, void> _proc
+            = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, COM_PTR_IUNKNOWN, UnsafeIn<D3D12_SHADER_RESOURCE_VIEW_DESC>, D3D12_CPU_DESCRIPTOR_HANDLE, void>)ptr;
 
         public nint PtrMethod => (nint)_proc;
-        public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, void* pResource, D3D12_SHADER_RESOURCE_VIEW_DESC* pDesc, D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor) => _proc(pThis, pResource, pDesc, destDescriptor);
+        public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, COM_PTR_IUNKNOWN pResource, in D3D12_SHADER_RESOURCE_VIEW_DESC pDesc, D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor)
+            => _proc(pThis, pResource, UnsafeIn<D3D12_SHADER_RESOURCE_VIEW_DESC>.FromIn(in pDesc), destDescriptor);
         public override string ToString() => PtrMethod.ToString("X8");
     }
     /*

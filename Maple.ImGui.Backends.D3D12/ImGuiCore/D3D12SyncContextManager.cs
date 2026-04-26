@@ -13,14 +13,14 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 
     internal sealed class D3D12SyncContextManager : IDisposable
     {
-        public const uint RTV_HEAP_CAPACITY = 8;
-        public const uint SRV_HEAP_CAPACITY = 64;
+
         public const int NUM_FRAMES_IN_FLIGHT = 2;
 
 
 
         public required D3D12FrameContext[] FrameContexts { get; set; }
         public required D3D12BackBuffer[] BackBuffers { get; set; }
+        
         public void Dispose()
         {
             this.DestroyBackBuffer();
@@ -82,7 +82,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                 yield break;
             }
 
-            var rtvSize = pDevice.GetDescriptorHandleIncrementSize();
+            var rtvSize = pDevice.GetDescriptorHandleIncrementSizeForRTV();
             var rtvHandle = rtvHeap.GetCPUDescriptorHandleForHeapStart();
 
             for (uint i = 0u; i < bufferCount; i++)
@@ -131,6 +131,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 
 
         #endregion
+
 
     }
 }

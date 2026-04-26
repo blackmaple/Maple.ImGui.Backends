@@ -116,7 +116,8 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
             public COM_HRESULT CreateDescriptorHeapForRTV(uint buffersCounts, out COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> ppvHeap)
                 => @this.CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE.D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAGS.D3D12_DESCRIPTOR_HEAP_FLAG_NONE, buffersCounts, 1, out ppvHeap);
 
-            public uint GetDescriptorHandleIncrementSize() => @this.Interface_VTable.GetDescriptorHandleIncrementSize_15.Invoke(@this, D3D12_DESCRIPTOR_HEAP_TYPE.D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+            public uint GetDescriptorHandleIncrementSizeForRTV() => @this.Interface_VTable.GetDescriptorHandleIncrementSize_15.Invoke(@this, D3D12_DESCRIPTOR_HEAP_TYPE.D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+            public uint GetDescriptorHandleIncrementSizeForSRV() => @this.Interface_VTable.GetDescriptorHandleIncrementSize_15.Invoke(@this, D3D12_DESCRIPTOR_HEAP_TYPE.D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 
             void CreateRenderTargetView(COM_PTR_IUNKNOWN pResource, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle)
@@ -137,7 +138,10 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
                 return hr;
             }
 
-
+            internal void CreateShaderResourceView(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pResource, in D3D12_SHADER_RESOURCE_VIEW_DESC desc, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle)
+            {
+                @this.Interface_VTable.CreateShaderResourceView_18.Invoke(@this, pResource, in desc, cpuHandle);
+            }
 
         }
     }

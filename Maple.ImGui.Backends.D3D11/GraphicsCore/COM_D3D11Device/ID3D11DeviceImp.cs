@@ -96,34 +96,13 @@ namespace Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Device
                 return false;
             }
 
-
-            public bool TryCreateShaderResourceView(COM_PTR_IUNKNOWN<ID3D11ResourceImp> pResource, out COM_PTR_IUNKNOWN<ID3D11ShaderResourceViewImp> pSRView)
+            internal COM_HRESULT CreateShaderResourceView(COM_PTR_IUNKNOWN pResource, in D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc,
+               out COM_PTR_IUNKNOWN<ID3D11ShaderResourceViewImp> pSRV)
             {
-                Unsafe.SkipInit(out pSRView);
-                if (pResource.TryGetID3D11Texture2D(out var pTexture2D))
-                {
-                    using (pTexture2D)
-                    {
-                        pTexture2D.GetDesc(out var pDesc);
-                        var srvDesc = new D3D11_SHADER_RESOURCE_VIEW_DESC()
-                        {
-                            Format = pDesc.Format,
-                            ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D,
-                            Anonymous = new D3D11_SHADER_RESOURCE_VIEW_DESC._Anonymous_e__Union()
-                            {
-                                Texture2D = new D3D11_TEX2D_SRV()
-                                {
-                                    MostDetailedMip = 0,
-                                    MipLevels = 1,
-                                }
-                            }
-                        };
-                        return @this.Interface_VTable.CreateShaderResourceView_7.Invoke(@this, pResource, srvDesc, out pSRView);
-                    }
-                }
-                return false;
-
+                return @this.Interface_VTable.CreateShaderResourceView_7.Invoke(@this, pResource, 
+                    UnsafeIn<D3D11_SHADER_RESOURCE_VIEW_DESC>.FromIn(in srvDesc), UnsafeOut<COM_PTR_IUNKNOWN<ID3D11ShaderResourceViewImp>>.FromOut(out pSRV));
             }
+
         }
 
     }

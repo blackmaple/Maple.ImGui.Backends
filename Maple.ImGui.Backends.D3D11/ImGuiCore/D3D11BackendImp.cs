@@ -127,7 +127,7 @@ namespace Maple.ImGui.Backends.D3D11.ImGuiCore
             if (this.ComponentContext.ID3D11RenderTargetViewPtr != nint.Zero)
             {
                 this.ComponentContext.SetRenderTarget(new COM_PTR_IUNKNOWN<IDXGISwapChainImp>(context));
-               // this.ComponentContext.ClearRenderTarget();
+                // this.ComponentContext.ClearRenderTarget();
             }
             ImGuiImplWin32.NewFrame();
             ImGuiImplD3D11.NewFrame();
@@ -161,6 +161,14 @@ namespace Maple.ImGui.Backends.D3D11.ImGuiCore
                 this.ComponentContext.WaitForGPU();
                 this.ComponentContext.Dispose();
 
+                foreach (var texture in this.TextureCache.Keys)
+                {
+                    var com = new COM_PTR_IUNKNOWN(texture);
+                    com.Release();
+                }
+                this.TextureCache.Clear();
+
+
                 ImGuiImplD3D11.Shutdown();
                 ImGuiImplWin32.Shutdown();
                 ImGuiApi.DestroyContext(imguiContext);
@@ -190,16 +198,15 @@ namespace Maple.ImGui.Backends.D3D11.ImGuiCore
 
         protected override ImTextureID CreateImTextureID(nint textureNativePtr)
         {
-            _ = TryCreateShaderResourceView(textureNativePtr, out var pSRV);
-            nint ptr = pSRV;
-            return new ImTextureID(ptr);
+            var pResource = new COM_PTR_IUNKNOWN<ID3D11ResourceImp>(textureNativePtr);
+            if (this.ComponentContext.TryCreateShaderResourceView(pResource, out var pSRV))
+            {
+                return new ImTextureID((nint)pSRV);
+            }
+            return default;
         }
 
-        private bool TryCreateShaderResourceView(nint textureNativePtr, out COM_PTR_IUNKNOWN<ID3D11ShaderResourceViewImp> pSRV)
-        {
-            var pResource = new COM_PTR_IUNKNOWN<ID3D11ResourceImp>(textureNativePtr);
-            return this.ComponentContext.ID3D11DevicePtr.TryCreateShaderResourceView(pResource, out pSRV);
-        }
+
     }
 
 

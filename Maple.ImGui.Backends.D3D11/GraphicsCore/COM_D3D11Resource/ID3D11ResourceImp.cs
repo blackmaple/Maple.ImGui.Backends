@@ -25,10 +25,10 @@ namespace Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Resource
             public COM_HRESULT QueryInterface<T>(in Guid riid, out COM_PTR_IUNKNOWN<T> pObject) where T : unmanaged
                 => @this.IUnknown_VTable.QueryInterface_0.Invoke(@this, in riid, out pObject);
 
-            public COM_HRESULT TryGetID3D11Texture2D(out COM_PTR_IUNKNOWN<ID3D11Texture2DImp> pResource)
-            {
-                return @this.QueryInterface(ID3D11Texture2DImp.GUID, out pResource);
-            }
+            //public COM_HRESULT TryGetID3D11Texture2D(out COM_PTR_IUNKNOWN<ID3D11Texture2DImp> pResource)
+            //{
+            //    return @this.QueryInterface(ID3D11Texture2DImp.GUID, out pResource);
+            //}
         }
 
         public static COM_PTR_IUNKNOWN<ID3D11ResourceImp> Create(nint nativeTexturePtr)

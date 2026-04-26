@@ -59,7 +59,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         }
         private static COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> GetSrvHeap(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pDevice)
         {
-            var hr = pDevice.CreateDescriptorHeapForSRV(D3D12SyncContextManager.SRV_HEAP_CAPACITY, out var srvHeap);
+            var hr = pDevice.CreateDescriptorHeapForSRV(D3D12ComponentContext.SRV_HEAP_CAPACITY, out var srvHeap);
             if (!hr)
             {
                 return ImGuiBackendException.Throw<COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp>>($"{nameof(ID3D12DeviceImpExtension.CreateDescriptorHeapForSRV)}:{hr}");
@@ -68,7 +68,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         }
         private static COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> GetRtvHeap(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pDevice)
         {
-            var hr = pDevice.CreateDescriptorHeapForRTV(D3D12SyncContextManager.RTV_HEAP_CAPACITY, out var rtvHeap);
+            var hr = pDevice.CreateDescriptorHeapForRTV(D3D12ComponentContext.RTV_HEAP_CAPACITY, out var rtvHeap);
             if (!hr)
             {
                 return ImGuiBackendException.Throw<COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp>>($"{nameof(ID3D12DeviceImpExtension.CreateDescriptorHeapForRTV)}:{hr}");
@@ -143,6 +143,8 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                 {
                     return ImGuiBackendException.Throw<bool>($"{nameof(D3D12BackendService.InitPlatform)} IS ERROR");
                 }
+                var srvCPU = srvHeap.GetCPUDescriptorHandleForHeapStart();
+                var srvGPU = srvHeap.GetGPUDescriptorHandleForHeapStart();
                 ImGuiImplDX12InitInfo initInfo = new()
                 {
                     Device = pDevice.AsPointer<ID3D12DeviceImp, Hexa.NET.ImGui.Backends.D3D12.ID3D12Device>(),
@@ -150,8 +152,8 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                     RTVFormat = (int)pDesc.BufferDesc.Format,
                     DSVFormat = (int)DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
                     SrvDescriptorHeap = srvHeap.AsPointer<ID3D12DescriptorHeapImp, Hexa.NET.ImGui.Backends.D3D12.ID3D12DescriptorHeap>(),
-                    LegacySingleSrvCpuDescriptor = new(srvHeap.GetCPUDescriptorHandleForHeapStart().ptr),
-                    LegacySingleSrvGpuDescriptor = new(srvHeap.GetGPUDescriptorHandleForHeapStart().ptr),
+                    LegacySingleSrvCpuDescriptor = new(srvCPU.ptr),
+                    LegacySingleSrvGpuDescriptor = new(srvGPU.ptr),
 
                 };
                 ImGuiImplD3D12.SetCurrentContext(imguiContext);
@@ -174,7 +176,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                     ID3D12FencePtr = pFence,
                     ID3D12CommandListPtr = pCommandList,
                     ID3D12CommandAllocatorPtr = pCommandAllocator,
-
+                    TextureSlots = D3D12ComponentContext.CreateTextureSlot(pDevice, srvHeap, srvCPU, srvGPU),
                 };
 
                 backendImp = new D3D12BackendImp(
@@ -218,7 +220,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             // 1. 等待 GPU 完成所有工作
             this.ComponentContext.WaitForGPU();
 
-           
+
         }
 
         public override void Reset(nint context)
@@ -361,11 +363,30 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 
                 this.ComponentContext.Dispose();
                 this.SyncContextManager.Dispose();
- 
+
+                foreach(var texture  in this.TextureCache.Keys)
+                {
+                    var com = new COM_PTR_IUNKNOWN(texture);
+                    com.Release();
+                }
+                this.TextureCache.Clear();
+
                 ImGuiImplD3D12.Shutdown();
                 ImGuiImplWin32.Shutdown();
                 ImGuiApi.DestroyContext(imguiContext);
             }
         }
+
+        protected override ImTextureID CreateImTextureID(nint textureNativePtr)
+        {
+            var pResource = new COM_PTR_IUNKNOWN<ID3D12ResourceImp>(textureNativePtr);
+            if (this.ComponentContext.TryCreateShaderResourceView(pResource, out var pSRV))
+            {
+                return new ImTextureID(pSRV.ptr);
+            }
+            return default;
+        }
+
+      
     }
 }
