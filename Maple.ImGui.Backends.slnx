@@ -1,7 +1,9 @@
 <Solution>
   <Project Path="Maple.ImGui.Backends.D3D10/Maple.ImGui.Backends.D3D10.csproj" />
   <Project Path="Maple.ImGui.Backends.D3D11/Maple.ImGui.Backends.D3D11.csproj" />
+  <Project Path="Maple.ImGui.Backends.D3D12/Maple.ImGui.Backends.D3D12.csproj" Id="797ce154-c9af-4dfc-9d33-8acd2f7a2d97" />
   <Project Path="Maple.ImGui.Backends.D3D9/Maple.ImGui.Backends.D3D9.csproj" />
+  <Project Path="Maple.ImGui.Backends.DXGI/Maple.ImGui.Backends.DXGI.csproj" Id="e59c49f5-bc4a-4d1f-8555-53a070512ac4" />
   <Project Path="Maple.ImGui.Backends.GameUI/Maple.ImGui.Backends.GameUI.csproj" Id="6f7c8576-8987-4a33-8011-b67092056342" />
   <Project Path="Maple.ImGui.Backends.OPENGL/Maple.ImGui.Backends.OPENGL.csproj" />
   <Project Path="Maple.ImGui.Backends.Platform/Maple.ImGui.Backends.Platform.csproj" Id="cd4b41c1-72cd-486a-ab84-181837f87cb0" />

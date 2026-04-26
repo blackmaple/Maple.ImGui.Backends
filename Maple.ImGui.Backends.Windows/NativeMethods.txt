@@ -51,3 +51,10 @@ WM_IME_STARTCOMPOSITION
 WM_IME_ENDCOMPOSITION
 WM_IME_COMPOSITION
 VIRTUAL_KEY
+RegisterClassEx
+UnregisterClass
+CreateWindowEx
+DestroyWindow
+DefWindowProc
+GetModuleHandle
+HRESULT

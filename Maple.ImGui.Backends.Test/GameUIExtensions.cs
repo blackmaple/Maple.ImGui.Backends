@@ -1,9 +1,10 @@
 ﻿using Maple.Hook.Imp.Dobby.Dynamic;
 using Maple.Hook.WinMsg;
-using Maple.ImGui.Backends.D3D11;
-using Maple.ImGui.Backends.Windows;
-using Maple.RenderSpy.Graphics.D3D11;
-using Maple.RenderSpy.Graphics.Windows;
+using Maple.ImGui.Backends.D3D11.GraphicsCore;
+using Maple.ImGui.Backends.D3D11.ImGuiCore;
+using Maple.ImGui.Backends.ImGuiCore;
+using Maple.ImGui.Backends.Windows.GraphicsCore;
+using Maple.ImGui.Backends.Windows.ImGuiCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Maple.ImGui.Backends.GameUI

@@ -1,0 +1,5 @@
+D3D11CreateDevice
+D3D11_SDK_VERSION
+IDXGIDevice
+IDXGIFactory
+ID3D11DeviceContext

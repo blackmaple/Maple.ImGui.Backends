@@ -4,7 +4,11 @@
 		<TargetFramework>net10.0-windows</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+		<CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
+
 
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>Maple.ImGui.Backends.D3D11</Title>
@@ -14,9 +18,10 @@
 		<Description>dotNet ImGui Backends D3D11</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>hook;c#;dotnet;AOT</PackageTags>
-		<Version>0.26.0417.05-rc</Version>
+		<Version>0.26.0426.04-rc</Version>
 	</PropertyGroup>
 
+ 
 
 	<ItemGroup>
 		<None Include="..\LICENSE" Link="LICENSE">
@@ -31,15 +36,21 @@
 	<ItemGroup>
 		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
 		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
-		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.413.1-rc" />
-		<PackageReference Include="Maple.RenderSpy.Graphics.D3D11" Version="0.26.409.1-rc" />
-		<PackageReference Include="Maple.RenderSpy.Graphics.DXGI" Version="0.26.409.1-rc" />
-		<PackageReference Include="Maple.RenderSpy.Graphics" Version="0.26.401.5-rc" />
-		<PackageReference Include="Maple.RenderSpy.Graphics.Windows" Version="0.26.401.5-rc" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Maple.ImGui.Backends.DXGI\Maple.ImGui.Backends.DXGI.csproj" />
 		<ProjectReference Include="..\Maple.ImGui.Backends.Windows\Maple.ImGui.Backends.Windows.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="GraphicsCore\" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 </Project>

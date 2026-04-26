@@ -12,9 +12,6 @@ namespace Maple.ImGui.Backends.GameUI
     /// </summary>
     public partial class UIGameDataPage
     {
-        private const float GridCardVerticalSpacing = 16.0f;
-        private const float GridBottomPadding = 16.0f;
-
         private void RenderDisplayTabContent<TDisplay>(string tabName, TDisplay[] items, SearchState searchState) where TDisplay : GameObjectDisplayDTO
         {
             RenderTabToolbar(tabName, searchState);
@@ -34,55 +31,19 @@ namespace Maple.ImGui.Backends.GameUI
 
             var childSize = ImGuiApi.GetContentRegionAvail();
             var gridWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
-            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
-            if (!ImGuiApi.BeginChild($"##{tabName}GridCards", childSize, ImGuiChildFlags.None, gridWindowFlags))
-            {
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
-                return;
-            }
-
             var cardWidth = GetInventoryCardWidth(childSize.X);
             var gridCardHeight = items is GameSwitchDisplayDTO[] switchItems
-                ? MathF.Max(112.0f, switchItems.Select(GetSwitchDisplayEditorCardHeight).DefaultIfEmpty(112.0f).Max())
-                : 112.0f;
-            var cardHeight = gridCardHeight;
-            var rowHeight = cardHeight + cardSpacing;
-            var (columns, rowCount, startOffsetX) = GetCenteredGridLayout(childSize.X, childSize.Y, cardWidth, cardSpacing, rowHeight, items.Length);
-            var clipper = new ImGuiListClipper();
-            clipper.Begin(rowCount, rowHeight);
-            while (clipper.Step())
-            {
-                for (var row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
-                {
-                    ImGuiApi.SetCursorPosX(ImGuiApi.GetCursorPosX() + startOffsetX);
-                    for (var column = 0; column < columns; column++)
-                    {
-                        var itemIndex = (row * columns) + column;
-                        if (itemIndex >= items.Length)
-                        {
-                            break;
-                        }
-
-                        if (column > 0)
-                        {
-                            ImGuiApi.SameLine(0.0f, cardSpacing);
-                        }
-
-                        RenderDisplayCard(tabName, items[itemIndex], itemIndex, cardWidth);
-                    }
-
-                    if (row < rowCount - 1)
-                    {
-                        ImGuiApi.Dummy(new Vector2(0.0f, cardSpacing));
-                    }
-                }
-            }
-
-            clipper.End();
-            ImGuiApi.Dummy(new Vector2(0.0f, GridBottomPadding));
-            ImGuiApi.EndChild();
-            ImGuiApi.PopStyleColor();
+                ? MathF.Max(GridCardHeight, switchItems.Select(GetSwitchDisplayEditorCardHeight).DefaultIfEmpty(GridCardHeight).Max())
+                : GridCardHeight;
+            RenderGridCardsCore(
+                $"##{tabName}GridCards",
+                childSize,
+                gridWindowFlags,
+                cardWidth,
+                gridCardHeight,
+                cardSpacing,
+                items.Length,
+                itemIndex => RenderDisplayCard(tabName, items[itemIndex], itemIndex, cardWidth));
         }
 
         private void RenderMonsterDisplayCards(GameMonsterDisplayDTO[] items)
@@ -91,52 +52,16 @@ namespace Maple.ImGui.Backends.GameUI
 
             var childSize = ImGuiApi.GetContentRegionAvail();
             var gridWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
-            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
-            if (!ImGuiApi.BeginChild("##MonsterGridCards", childSize, ImGuiChildFlags.None, gridWindowFlags))
-            {
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
-                return;
-            }
-
             var cardWidth = GetInventoryCardWidth(childSize.X);
-            const float cardHeight = 112.0f;
-            var rowHeight = cardHeight + cardSpacing;
-            var (columns, rowCount, startOffsetX) = GetCenteredGridLayout(childSize.X, childSize.Y, cardWidth, cardSpacing, rowHeight, items.Length);
-            var clipper = new ImGuiListClipper();
-            clipper.Begin(rowCount, rowHeight);
-            while (clipper.Step())
-            {
-                for (var row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
-                {
-                    ImGuiApi.SetCursorPosX(ImGuiApi.GetCursorPosX() + startOffsetX);
-                    for (var column = 0; column < columns; column++)
-                    {
-                        var itemIndex = (row * columns) + column;
-                        if (itemIndex >= items.Length)
-                        {
-                            break;
-                        }
-
-                        if (column > 0)
-                        {
-                            ImGuiApi.SameLine(0.0f, cardSpacing);
-                        }
-
-                        RenderInventoryDisplayCard(items[itemIndex], itemIndex, new Vector2(cardWidth, cardHeight));
-                    }
-
-                    if (row < rowCount - 1)
-                    {
-                        ImGuiApi.Dummy(new Vector2(0.0f, cardSpacing));
-                    }
-                }
-            }
-
-            clipper.End();
-            ImGuiApi.Dummy(new Vector2(0.0f, GridBottomPadding));
-            ImGuiApi.EndChild();
-            ImGuiApi.PopStyleColor();
+            RenderGridCardsCore(
+                "##MonsterGridCards",
+                childSize,
+                gridWindowFlags,
+                cardWidth,
+                GridCardHeight,
+                cardSpacing,
+                items.Length,
+                itemIndex => RenderInventoryDisplayCard(items[itemIndex], itemIndex, new Vector2(cardWidth, GridCardHeight)));
         }
 
         private void RenderInventoryDisplayCards(GameInventoryDisplayDTO[] items)
@@ -145,17 +70,8 @@ namespace Maple.ImGui.Backends.GameUI
 
             var childSize = ImGuiApi.GetContentRegionAvail();
             var gridWindowFlags = IsEditDialogBlockingInput() ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
-            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
-            if (!ImGuiApi.BeginChild("##InventoryGridCards", childSize, ImGuiChildFlags.None, gridWindowFlags))
-            {
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
-                return;
-            }
-
             var inventoryCardWidth = GetInventoryCardWidth(childSize.X);
-            const float inventoryCardHeight = 112.0f;
-            var rowHeight = inventoryCardHeight + inventoryCardSpacing;
+            var rowHeight = GridCardHeight + inventoryCardSpacing;
             var estimatedColumns = GetGridColumns(childSize.X, inventoryCardWidth, inventoryCardSpacing);
             if (LastInventoryGridColumns > 0 && LastInventoryGridColumns != estimatedColumns)
             {
@@ -174,7 +90,29 @@ namespace Maple.ImGui.Backends.GameUI
                 PendingInventoryGridScrollY = -1.0f;
             }
 
-            var (columns, rowCount, startOffsetX) = GetCenteredGridLayout(childSize.X, childSize.Y, inventoryCardWidth, inventoryCardSpacing, rowHeight, items.Length);
+            RenderGridCardsCore(
+                "##InventoryGridCards",
+                childSize,
+                gridWindowFlags,
+                inventoryCardWidth,
+                GridCardHeight,
+                inventoryCardSpacing,
+                items.Length,
+                itemIndex => RenderInventoryDisplayCard(items[itemIndex], itemIndex, new Vector2(inventoryCardWidth, GridCardHeight)));
+        }
+
+        private void RenderGridCardsCore(string childId, Vector2 childSize, ImGuiWindowFlags gridWindowFlags, float cardWidth, float cardHeight, float cardSpacing, int itemCount, Action<int> renderCard)
+        {
+            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
+            if (!ImGuiApi.BeginChild(childId, childSize, ImGuiChildFlags.None, gridWindowFlags))
+            {
+                ImGuiApi.EndChild();
+                ImGuiApi.PopStyleColor();
+                return;
+            }
+
+            var rowHeight = cardHeight + cardSpacing;
+            var (columns, rowCount, startOffsetX) = GetCenteredGridLayout(childSize.X, childSize.Y, cardWidth, cardSpacing, rowHeight, itemCount);
             var clipper = new ImGuiListClipper();
             clipper.Begin(rowCount, rowHeight);
             while (clipper.Step())
@@ -185,29 +123,28 @@ namespace Maple.ImGui.Backends.GameUI
                     for (var column = 0; column < columns; column++)
                     {
                         var itemIndex = (row * columns) + column;
-                        if (itemIndex >= items.Length)
+                        if (itemIndex >= itemCount)
                         {
                             break;
                         }
 
                         if (column > 0)
                         {
-                            ImGuiApi.SameLine(0.0f, inventoryCardSpacing);
+                            ImGuiApi.SameLine(0.0f, cardSpacing);
                         }
 
-                        RenderInventoryDisplayCard(items[itemIndex], itemIndex, new Vector2(inventoryCardWidth, inventoryCardHeight));
+                        renderCard(itemIndex);
                     }
 
                     if (row < rowCount - 1)
                     {
-                        ImGuiApi.Dummy(new Vector2(0.0f, inventoryCardSpacing));
+                        ImGuiApi.Dummy(new Vector2(0.0f, cardSpacing));
                     }
                 }
             }
 
             clipper.End();
             ImGuiApi.Dummy(new Vector2(0.0f, GridBottomPadding));
-
             ImGuiApi.EndChild();
             ImGuiApi.PopStyleColor();
         }
@@ -215,48 +152,40 @@ namespace Maple.ImGui.Backends.GameUI
         private void RenderInventoryDisplayCard(GameObjectDisplayDTO item, int index, Vector2 cardSize)
         {
             var allowCardInteraction = !IsEditDialogBlockingInput();
-            const float cardControlMargin = 6.0f;
-            //     const float imageColumnWidth = 62.0f;
-            const float textStartX = 76.0f;
             var switchDisplay = item as GameSwitchDisplayDTO;
             var objectDisplay = item;// as GameObjectDisplayDTO;
             var monsterDisplay = item as GameMonsterDisplayDTO;
             var textColumnWidth = switchDisplay is null
-                ? MathF.Max(1.0f, cardSize.X - textStartX - 50.0f)
-                : MathF.Max(1.0f, cardSize.X - textStartX - 12.0f);
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.ChildRounding, DisplayCardRounding);
-            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.11f, 0.12f, 0.15f, 0.72f));
-            if (!ImGuiApi.BeginChild($"##InventoryGridCard_{item.ObjectId}_{index}", cardSize, ImGuiChildFlags.Borders, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+                ? MathF.Max(1.0f, cardSize.X - GridCardTextStartX - 50.0f)
+                : MathF.Max(1.0f, cardSize.X - GridCardTextStartX - 12.0f);
+            if (!BeginDisplayCard($"##InventoryGridCard_{item.ObjectId}_{index}", cardSize))
             {
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
-                ImGuiApi.PopStyleVar();
                 return;
             }
 
             var drawList = ImGuiApi.GetWindowDrawList();
             var cardPos = ImGuiApi.GetWindowPos();
-            var isCardHovered = allowCardInteraction && ImGuiApi.IsMouseHoveringRect(cardPos, cardPos + cardSize);
-            var cardCategory = switchDisplay is null
-                ? (string.IsNullOrWhiteSpace(objectDisplay.DisplayCategory) ? GetUiText("Text.Inventory") : objectDisplay.DisplayCategory)
-                : GetUiText("Text.Misc");
-            var thumbnailSize = new Vector2(48.0f, 48.0f);
-            var thumbnailMin = cardPos + new Vector2(14.0f, 14.0f);
-            RenderCardThumbnail(thumbnailMin, thumbnailSize, objectDisplay.DisplayCategory, item.ObjectId, objectDisplay.DisplayImage);
+            var isCardHovered = IsCardInteractionHovered(allowCardInteraction, cardPos, cardSize);
+            var (cardCategory, visibleCardCategory) = GetCardCategoryTexts(objectDisplay.DisplayCategory, switchDisplay is not null, GetUiText("Text.Inventory"));
+            RenderDisplayCardHeader(
+                cardPos,
+                objectDisplay.DisplayCategory,
+                item.ObjectId,
+                objectDisplay.DisplayImage,
+                visibleCardCategory,
+                item.DisplayName ?? string.Empty,
+                textColumnWidth,
+                switchDisplay is not null);
 
             if (monsterDisplay is not null)
             {
-                var addButtonPosition = new Vector2(cardSize.X - CardActionButtonSize - cardControlMargin, cardSize.Y - CardActionButtonSize - cardControlMargin);
-                var infoButtonPosition = addButtonPosition - new Vector2(CardActionButtonSize + CardActionButtonSpacing, 0.0f);
+                var addButtonPosition = GetCardActionButtonPosition(cardSize.X, cardSize.Y);
+                var infoButtonPosition = GetSecondaryCardActionButtonPosition(addButtonPosition);
 
-                PushIconButtonStyle(
-                    new Vector4(0.92f, 0.40f, 0.02f, 0.18f),
-                    new Vector4(0.92f, 0.40f, 0.02f, 0.35f),
-                    new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
-                ImGuiApi.SetCursorPos(infoButtonPosition);
-                var infoClicked = ImGuiApi.Button($"##MonsterInfo_{item.ObjectId}_{index}", new Vector2(CardActionButtonSize, CardActionButtonSize));
-                DrawActionButtonIcon();
-                PopIconButtonStyle();
+                var infoClicked = RenderActionIconButton(
+                    infoButtonPosition,
+                    $"##MonsterInfo_{item.ObjectId}_{index}",
+                    CardActionButtonSize);
                 if (infoClicked)
                 {
                     HandleMonsterInfoButtonClick(monsterDisplay);
@@ -269,78 +198,25 @@ namespace Maple.ImGui.Backends.GameUI
             }
             else if (switchDisplay is null)
             {
-                PushIconButtonStyle(
-                    new Vector4(0.92f, 0.40f, 0.02f, 0.18f),
-                    new Vector4(0.92f, 0.40f, 0.02f, 0.35f),
-                    new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
-                ImGuiApi.SetCursorPos(new Vector2(cardSize.X - 30.0f - cardControlMargin, cardSize.Y - 30.0f - cardControlMargin));
-                if (ImGuiApi.Button($"##InventoryGridEdit_{item.ObjectId}_{index}", new Vector2(30.0f, 30.0f)))
+                if (RenderActionIconButton(
+                    GetCardActionButtonPosition(cardSize.X, cardSize.Y),
+                    $"##InventoryGridEdit_{item.ObjectId}_{index}",
+                    GridCardActionButtonSize))
                 {
                     HandleEditButtonClick(item);
                 }
-
-                DrawActionButtonIcon();
-                PopIconButtonStyle();
             }
             else
             {
-                const float switchEditorWidth = 154.0f;
-                const float switchEditorBottomMargin = cardControlMargin;
-                var switchEditorX = MathF.Max(0.0f, (cardSize.X - switchEditorWidth) * 0.5f);
-                var switchEditorY = cardSize.Y - 30.0f - switchEditorBottomMargin;
-                var switchEditorHeight = MathF.Max(30.0f, cardSize.Y - switchEditorY - switchEditorBottomMargin);
-                ImGuiApi.SetCursorPos(new Vector2(switchEditorX, switchEditorY));
-                ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
-                if (ImGuiApi.BeginChild($"##SwitchEditorHost_{item.ObjectId}_{index}", new Vector2(switchEditorWidth, switchEditorHeight), ImGuiChildFlags.None, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
-                {
-                    RenderSwitchDisplayEditor(switchDisplay, index);
-                }
-
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
+                RenderSwitchEditorHost(switchDisplay, item.ObjectId, index, cardSize.X, cardSize.Y);
             }
-
-            RenderInventoryCardTextBlock(switchDisplay is null ? cardCategory : string.Empty, item.DisplayName ?? string.Empty, cardPos, textStartX, textColumnWidth, switchDisplay is not null);
 
             if (allowCardInteraction && isCardHovered)
             {
-                var tooltipDesc = GetPlainText(item.DisplayDesc);
-                if (string.IsNullOrWhiteSpace(tooltipDesc))
-                {
-                    tooltipDesc = GetUiText("Dialog.Text.Empty");
-                }
-
-                ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
-                ImGuiApi.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.09f, 0.10f, 0.12f, 0.98f));
-                ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(0.20f, 0.62f, 0.26f, 0.92f));
-                BeginStandardTooltip();
-                ImGuiApi.PushTextWrapPos(ImGuiApi.GetFontSize() * 24.0f);
-                ImGuiApi.TextUnformatted(cardCategory);
-                ImGuiApi.Separator();
-                ImGuiApi.TextUnformatted(item.DisplayName ?? string.Empty);
-                ImGuiApi.Spacing();
-                ImGuiApi.TextUnformatted(tooltipDesc);
-                RenderTooltipAttributes(item);
-                ImGuiApi.PopTextWrapPos();
-                ImGuiApi.EndTooltip();
-                ImGuiApi.PopStyleColor(2);
-                ImGuiApi.PopStyleVar();
+                RenderDisplayCardHoverFeedback(drawList, cardPos, cardSize, cardCategory, item.DisplayName ?? string.Empty, item.DisplayDesc, item);
             }
 
-            if (isCardHovered)
-            {
-                drawList.AddRect(
-                    cardPos + new Vector2(1.0f, 1.0f),
-                    cardPos + cardSize - new Vector2(1.0f, 1.0f),
-                    ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.24f, 0.72f, 0.38f, 0.95f)),
-                    DisplayCardRounding,
-                    ImDrawFlags.None,
-                    1.6f);
-            }
-
-            ImGuiApi.EndChild();
-            ImGuiApi.PopStyleColor();
-            ImGuiApi.PopStyleVar();
+            EndDisplayCard();
         }
 
         private void RenderInventoryCardTextBlock(string category, string title, Vector2 cardPos, float textStartX, float textColumnWidth, bool preserveCategorySpace = false)
@@ -638,163 +514,184 @@ namespace Maple.ImGui.Backends.GameUI
             var switchDisplay = item as GameSwitchDisplayDTO;
             var characterDisplay = item as GameCharacterDisplayDTO;
             var allowCardInteraction = !IsEditDialogBlockingInput();
-            const float cardControlMargin = 6.0f;
             var cardWidth = MathF.Max(1.0f, availableWidth);
             var cardHeight = switchDisplay is null
-                ? 112.0f
-                : MathF.Max(112.0f, GetSwitchDisplayEditorCardHeight(switchDisplay));
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.ChildRounding, DisplayCardRounding);
-            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.11f, 0.12f, 0.15f, 0.72f));
-            if (!ImGuiApi.BeginChild($"##{tabName}_Card_{item.ObjectId}_{index}", new Vector2(cardWidth, cardHeight), ImGuiChildFlags.Borders, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+                ? GridCardHeight
+                : MathF.Max(GridCardHeight, GetSwitchDisplayEditorCardHeight(switchDisplay));
+            if (!BeginDisplayCard($"##{tabName}_Card_{item.ObjectId}_{index}", new Vector2(cardWidth, cardHeight)))
             {
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
-                ImGuiApi.PopStyleVar();
                 return;
             }
 
             var drawList = ImGuiApi.GetWindowDrawList();
             var windowPos = ImGuiApi.GetWindowPos();
-            var iconMin = windowPos + new Vector2(14.0f, 14.0f);
-            var compactThumbnailSize = new Vector2(48.0f, 48.0f);
 
-            const float actionButtonSize = 30.0f;
-            const float actionButtonSpacing = 8.0f;
-            var actionButtonPosition = new Vector2(cardWidth - actionButtonSize - cardControlMargin, cardHeight - actionButtonSize - cardControlMargin);
-            var skillButtonPosition = actionButtonPosition - new Vector2(actionButtonSize + actionButtonSpacing, 0.0f);
-            const float textStartX = 76.0f;
-            var textRightBoundary = cardWidth - 16.0f;
-            var textWidth = MathF.Max(1.0f, textRightBoundary - textStartX - 12.0f);
-            var cardCategory = switchDisplay is null
-                ? (string.IsNullOrWhiteSpace(objectDisplay.DisplayCategory) ? tabName : objectDisplay.DisplayCategory)
-                : GetUiText("Text.Misc");
-            var visibleCardCategory = switchDisplay is null ? cardCategory : string.Empty;
+            var actionButtonPosition = GetCardActionButtonPosition(cardWidth, cardHeight);
+            var skillButtonPosition = GetSecondaryCardActionButtonPosition(actionButtonPosition);
+            var textWidth = GetStandardCardTextWidth(cardWidth);
+            var (cardCategory, visibleCardCategory) = GetCardCategoryTexts(objectDisplay.DisplayCategory, switchDisplay is not null, tabName);
 
-            RenderCardThumbnail(iconMin, compactThumbnailSize, objectDisplay.DisplayCategory, item.ObjectId, objectDisplay.DisplayImage);
-
-            RenderInventoryCardTextBlock(visibleCardCategory, item.DisplayName ?? string.Empty, windowPos, textStartX, textWidth, switchDisplay is not null);
+            RenderDisplayCardHeader(
+                windowPos,
+                objectDisplay.DisplayCategory,
+                item.ObjectId,
+                objectDisplay.DisplayImage,
+                visibleCardCategory,
+                item.DisplayName ?? string.Empty,
+                textWidth,
+                switchDisplay is not null);
 
             if (switchDisplay is not null)
             {
-                const float switchEditorWidth = 154.0f;
-                const float switchEditorBottomMargin = cardControlMargin;
-                var switchEditorX = MathF.Max(0.0f, (cardWidth - switchEditorWidth) * 0.5f);
-                var switchEditorY = cardHeight - 30.0f - switchEditorBottomMargin;
-                var switchEditorHeight = MathF.Max(30.0f, cardHeight - switchEditorY - switchEditorBottomMargin);
-                ImGuiApi.SetCursorPos(new Vector2(switchEditorX, switchEditorY));
-                ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
-                if (ImGuiApi.BeginChild($"##SwitchGridEditorHost_{item.ObjectId}_{index}", new Vector2(switchEditorWidth, switchEditorHeight), ImGuiChildFlags.None, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+                RenderSwitchEditorHost(switchDisplay, item.ObjectId, index, cardWidth, cardHeight);
+
+                if (IsCardInteractionHovered(allowCardInteraction, windowPos, new Vector2(cardWidth, cardHeight), true))
                 {
-                    RenderSwitchDisplayEditor(switchDisplay, index);
+                    RenderDisplayCardHoverFeedback(drawList, windowPos, new Vector2(cardWidth, cardHeight), cardCategory, item.DisplayName ?? string.Empty, item.DisplayDesc, item);
                 }
 
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
-
-                if (allowCardInteraction && (ImGuiApi.IsItemHovered() || ImGuiApi.IsMouseHoveringRect(windowPos, windowPos + new Vector2(cardWidth, cardHeight))))
-                {
-                    var tooltipDesc = GetPlainText(item.DisplayDesc);
-                    if (string.IsNullOrWhiteSpace(tooltipDesc))
-                    {
-                        tooltipDesc = GetUiText("Dialog.Text.Empty");
-                    }
-
-                    ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
-                    ImGuiApi.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.09f, 0.10f, 0.12f, 0.98f));
-                    ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(0.20f, 0.62f, 0.26f, 0.92f));
-                    BeginStandardTooltip();
-                    ImGuiApi.PushTextWrapPos(ImGuiApi.GetFontSize() * 24.0f);
-                    ImGuiApi.TextUnformatted(cardCategory);
-                    ImGuiApi.Separator();
-                    ImGuiApi.TextUnformatted(item.DisplayName ?? string.Empty);
-                    ImGuiApi.Spacing();
-                    ImGuiApi.TextUnformatted(tooltipDesc);
-                    RenderTooltipAttributes(item);
-                    ImGuiApi.PopTextWrapPos();
-                    ImGuiApi.EndTooltip();
-                    ImGuiApi.PopStyleColor(2);
-                    ImGuiApi.PopStyleVar();
-
-                    drawList.AddRect(
-                        windowPos + new Vector2(1.0f, 1.0f),
-                        windowPos + new Vector2(cardWidth, cardHeight) - new Vector2(1.0f, 1.0f),
-                        ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.24f, 0.72f, 0.38f, 0.95f)),
-                        DisplayCardRounding,
-                        ImDrawFlags.None,
-                        1.6f);
-                }
-
-                ImGuiApi.EndChild();
-                ImGuiApi.PopStyleColor();
-                ImGuiApi.PopStyleVar();
+                EndDisplayCard();
                 return;
             }
 
             if (characterDisplay is not null)
             {
-                PushIconButtonStyle(
-                    new Vector4(0.16f, 0.34f, 0.78f, 0.20f),
-                    new Vector4(0.20f, 0.42f, 0.92f, 0.36f),
-                    new Vector4(0.14f, 0.30f, 0.78f, 0.52f));
-                ImGuiApi.SetCursorPos(skillButtonPosition);
-                if (ImGuiApi.Button($"##Skill_{tabName}_{item.ObjectId}_{index}", new Vector2(actionButtonSize, actionButtonSize)))
+                if (RenderSkillIconButton(
+                    skillButtonPosition,
+                    $"##Skill_{tabName}_{item.ObjectId}_{index}"))
                 {
                     HandleSkillButtonClick(characterDisplay);
                 }
-
-                DrawSkillButtonIcon();
-                PopIconButtonStyle();
             }
 
-            PushIconButtonStyle(
-                new Vector4(0.92f, 0.40f, 0.02f, 0.18f),
-                new Vector4(0.92f, 0.40f, 0.02f, 0.35f),
-                new Vector4(0.92f, 0.40f, 0.02f, 0.50f));
-            ImGuiApi.SetCursorPos(actionButtonPosition);
-            if (ImGuiApi.Button($"##Action_{tabName}_{item.ObjectId}_{index}", new Vector2(actionButtonSize, actionButtonSize)))
+            if (RenderActionIconButton(
+                actionButtonPosition,
+                $"##Action_{tabName}_{item.ObjectId}_{index}",
+                GridCardActionButtonSize))
             {
                 HandleEditButtonClick(item);
             }
 
-            DrawActionButtonIcon();
-            PopIconButtonStyle();
-
-            if (allowCardInteraction && (ImGuiApi.IsItemHovered() || ImGuiApi.IsMouseHoveringRect(windowPos, windowPos + new Vector2(cardWidth, cardHeight))))
+            if (IsCardInteractionHovered(allowCardInteraction, windowPos, new Vector2(cardWidth, cardHeight), true))
             {
-                var tooltipDesc = GetPlainText(item.DisplayDesc);
-                if (string.IsNullOrWhiteSpace(tooltipDesc))
-                {
-                    tooltipDesc = GetUiText("Dialog.Text.Empty");
-                }
+                RenderDisplayCardHoverFeedback(drawList, windowPos, new Vector2(cardWidth, cardHeight), cardCategory, item.DisplayName ?? string.Empty, item.DisplayDesc, item);
+            }
 
-                ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
-                ImGuiApi.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.09f, 0.10f, 0.12f, 0.98f));
-                ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(0.20f, 0.62f, 0.26f, 0.92f));
-                BeginStandardTooltip();
-                ImGuiApi.PushTextWrapPos(ImGuiApi.GetFontSize() * 24.0f);
-                ImGuiApi.TextUnformatted(cardCategory);
-                ImGuiApi.Separator();
-                ImGuiApi.TextUnformatted(item.DisplayName ?? string.Empty);
-                ImGuiApi.Spacing();
-                ImGuiApi.TextUnformatted(tooltipDesc);
-                RenderTooltipAttributes(item);
-                ImGuiApi.PopTextWrapPos();
-                ImGuiApi.EndTooltip();
-                ImGuiApi.PopStyleColor(2);
-                ImGuiApi.PopStyleVar();
+            EndDisplayCard();
+        }
 
-                drawList.AddRect(
-                    windowPos + new Vector2(1.0f, 1.0f),
-                    windowPos + new Vector2(cardWidth, cardHeight) - new Vector2(1.0f, 1.0f),
-                    ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.24f, 0.72f, 0.38f, 0.95f)),
-                    DisplayCardRounding,
-                    ImDrawFlags.None,
-                    1.6f);
+        private static bool BeginDisplayCard(string id, Vector2 cardSize)
+        {
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.ChildRounding, DisplayCardRounding);
+            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.11f, 0.12f, 0.15f, 0.72f));
+            if (ImGuiApi.BeginChild(id, cardSize, ImGuiChildFlags.Borders, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            {
+                return true;
             }
 
             ImGuiApi.EndChild();
             ImGuiApi.PopStyleColor();
             ImGuiApi.PopStyleVar();
+            return false;
+        }
+
+        private static void EndDisplayCard()
+        {
+            ImGuiApi.EndChild();
+            ImGuiApi.PopStyleColor();
+            ImGuiApi.PopStyleVar();
+        }
+
+        private static bool IsCardInteractionHovered(bool allowCardInteraction, Vector2 cardPos, Vector2 cardSize, bool includeLastItemHover = false)
+        {
+            return allowCardInteraction
+                && ((includeLastItemHover && ImGuiApi.IsItemHovered())
+                    || ImGuiApi.IsMouseHoveringRect(cardPos, cardPos + cardSize));
+        }
+
+        private bool RenderActionIconButton(Vector2 position, string id, float size)
+        {
+            return RenderIconActionButton(position, id, size, ActionIconButtonStyle, DrawActionButtonIcon);
+        }
+
+        private bool RenderSkillIconButton(Vector2 position, string id)
+        {
+            return RenderIconActionButton(position, id, GridCardActionButtonSize, SkillIconButtonStyle, DrawSkillButtonIcon);
+        }
+
+        private bool RenderIconActionButton(Vector2 position, string id, float size, (Vector4 ButtonColor, Vector4 HoverColor, Vector4 ActiveColor) style, Action drawIcon)
+        {
+            PushIconButtonStyle(style.ButtonColor, style.HoverColor, style.ActiveColor);
+            ImGuiApi.SetCursorPos(position);
+            var clicked = ImGuiApi.Button(id, new Vector2(size, size));
+            drawIcon();
+            PopIconButtonStyle();
+            return clicked;
+        }
+
+        private static (Vector4 ButtonColor, Vector4 HoverColor, Vector4 ActiveColor) ActionIconButtonStyle =>
+        (
+            new Vector4(0.92f, 0.40f, 0.02f, 0.18f),
+            new Vector4(0.92f, 0.40f, 0.02f, 0.35f),
+            new Vector4(0.92f, 0.40f, 0.02f, 0.50f)
+        );
+
+        private static (Vector4 ButtonColor, Vector4 HoverColor, Vector4 ActiveColor) SkillIconButtonStyle =>
+        (
+            new Vector4(0.16f, 0.34f, 0.78f, 0.20f),
+            new Vector4(0.20f, 0.42f, 0.92f, 0.36f),
+            new Vector4(0.14f, 0.30f, 0.78f, 0.52f)
+        );
+
+        private void RenderSwitchEditorHost(GameSwitchDisplayDTO switchDisplay, string objectId, int index, float cardWidth, float cardHeight)
+        {
+            var switchEditorX = MathF.Max(0.0f, (cardWidth - SwitchEditorHostWidth) * 0.5f);
+            var switchEditorY = cardHeight - GridCardActionButtonSize - GridCardControlMargin;
+            var switchEditorHeight = MathF.Max(GridCardActionButtonSize, cardHeight - switchEditorY - GridCardControlMargin);
+            ImGuiApi.SetCursorPos(new Vector2(switchEditorX, switchEditorY));
+            ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0f, 0f, 0f, 0f));
+            if (ImGuiApi.BeginChild($"##SwitchEditorHost_{objectId}_{index}", new Vector2(SwitchEditorHostWidth, switchEditorHeight), ImGuiChildFlags.None, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            {
+                RenderSwitchDisplayEditor(switchDisplay, index);
+            }
+
+            ImGuiApi.EndChild();
+            ImGuiApi.PopStyleColor();
+        }
+
+        private void RenderDisplayCardHeader(Vector2 cardPos, string? category, string objectId, string? image, string visibleCategory, string title, float textWidth, bool preserveCategorySpace)
+        {
+            var thumbnailSize = new Vector2(GridCardThumbnailSize, GridCardThumbnailSize);
+            var thumbnailMin = cardPos + new Vector2(GridCardContentInset, GridCardContentInset);
+            RenderCardThumbnail(thumbnailMin, thumbnailSize, category, objectId, image);
+            RenderInventoryCardTextBlock(visibleCategory, title, cardPos, GridCardTextStartX, textWidth, preserveCategorySpace);
+        }
+
+        private static Vector2 GetCardActionButtonPosition(float cardWidth, float cardHeight)
+        {
+            return new Vector2(cardWidth - GridCardActionButtonSize - GridCardControlMargin, cardHeight - GridCardActionButtonSize - GridCardControlMargin);
+        }
+
+        private static Vector2 GetSecondaryCardActionButtonPosition(Vector2 primaryButtonPosition)
+        {
+            return primaryButtonPosition - new Vector2(GridCardActionButtonSize + GridCardActionButtonSpacing, 0.0f);
+        }
+
+        private static float GetStandardCardTextWidth(float cardWidth)
+        {
+            var textRightBoundary = cardWidth - 16.0f;
+            return MathF.Max(1.0f, textRightBoundary - GridCardTextStartX - 12.0f);
+        }
+
+        private (string CardCategory, string VisibleCardCategory) GetCardCategoryTexts(string? displayCategory, bool isSwitchDisplay, string emptyCategoryText)
+        {
+            if (isSwitchDisplay)
+            {
+                return (GetUiText("Text.Misc"), string.Empty);
+            }
+
+            var cardCategory = string.IsNullOrWhiteSpace(displayCategory) ? emptyCategoryText : displayCategory;
+            return (cardCategory, cardCategory);
         }
 
         private static void RenderSearchInput(string label, SearchState searchState, float width)
@@ -802,5 +699,47 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.SetNextItemWidth(width);
             ImGuiApi.InputText(label, ref searchState.InputText, (nuint)SearchInputBufferSize);
         }
-    }
+
+        private void RenderDisplayCardTooltip(string category, string title, string? description, GameDisplayDTO item)
+        {
+            var tooltipDesc = GetPlainText(description);
+            if (string.IsNullOrWhiteSpace(tooltipDesc))
+            {
+                tooltipDesc = GetUiText("Dialog.Text.Empty");
+            }
+
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
+            ImGuiApi.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.09f, 0.10f, 0.12f, 0.98f));
+            ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(0.20f, 0.62f, 0.26f, 0.92f));
+            BeginStandardTooltip();
+            ImGuiApi.PushTextWrapPos(ImGuiApi.GetFontSize() * 24.0f);
+            ImGuiApi.TextUnformatted(category);
+            ImGuiApi.Separator();
+            ImGuiApi.TextUnformatted(title);
+            ImGuiApi.Spacing();
+            ImGuiApi.TextUnformatted(tooltipDesc);
+            RenderTooltipAttributes(item);
+            ImGuiApi.PopTextWrapPos();
+            ImGuiApi.EndTooltip();
+            ImGuiApi.PopStyleColor(2);
+            ImGuiApi.PopStyleVar();
+        }
+
+        private void RenderDisplayCardHoverFeedback(ImDrawListPtr drawList, Vector2 cardPos, Vector2 cardSize, string category, string title, string? description, GameDisplayDTO item)
+        {
+            RenderDisplayCardTooltip(category, title, description, item);
+            DrawHoveredCardBorder(drawList, cardPos, cardSize);
+        }
+
+        private static void DrawHoveredCardBorder(ImDrawListPtr drawList, Vector2 cardPos, Vector2 cardSize)
+        {
+            drawList.AddRect(
+                cardPos + new Vector2(1.0f, 1.0f),
+                cardPos + cardSize - new Vector2(1.0f, 1.0f),
+                ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.24f, 0.72f, 0.38f, 0.95f)),
+                DisplayCardRounding,
+                ImDrawFlags.None,
+                1.6f);
+        }
+}
 }

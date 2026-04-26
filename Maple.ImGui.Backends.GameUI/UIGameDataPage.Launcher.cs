@@ -16,7 +16,7 @@ namespace Maple.ImGui.Backends.GameUI
                 return;
             }
 
-            const float buttonSizeValue = 60.0f;
+            const float buttonSizeValue = 48.0f;
             var buttonSize = new Vector2(buttonSizeValue, buttonSizeValue);
             var menuFlags = ImGuiWindowFlags.NoDecoration
                 | ImGuiWindowFlags.NoMove
@@ -33,21 +33,17 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, buttonSizeValue * 0.5f);
             ImGuiApi.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
             ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(1f, 1f, 1f, 0.00f));
-            ImGuiApi.PushStyleColor(ImGuiCol.Button, LauncherButtonColor);
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonHovered, LauncherButtonHoveredColor);
-            ImGuiApi.PushStyleColor(ImGuiCol.ButtonActive, LauncherButtonActiveColor);
             if (!ImGuiApi.Begin("##SessionLauncher", menuFlags))
             {
                 ImGuiApi.End();
-                ImGuiApi.PopStyleColor(5);
+                ImGuiApi.PopStyleColor(2);
                 ImGuiApi.PopStyleVar(3);
                 return;
             }
 
             HandleLauncherDrag();
 
-            var buttonText = _gameSessionInfoRequest.IsRunning ? GetLoadingText() : "GO";
-            if (ImGuiApi.Button(buttonText, buttonSize))
+            if (ImGuiApi.InvisibleButton("##SessionLauncherButton", buttonSize))
             {
                 if (GameSessionInfo is null)
                 {
@@ -67,9 +63,55 @@ namespace Maple.ImGui.Backends.GameUI
                 }
             }
 
+            var buttonMin = ImGuiApi.GetItemRectMin();
+            RenderLauncherButtonImage(buttonMin, buttonSize, ImGuiApi.IsItemHovered(), ImGuiApi.IsItemActive());
+
             ImGuiApi.End();
-            ImGuiApi.PopStyleColor(5);
+            ImGuiApi.PopStyleColor(2);
             ImGuiApi.PopStyleVar(3);
+        }
+
+        private static void RenderLauncherButtonBackground(Vector2 buttonMin, Vector2 buttonSize, bool hovered, bool active)
+        {
+            var drawList = ImGuiApi.GetWindowDrawList();
+            var buttonMax = buttonMin + buttonSize;
+            var buttonColor = active
+                ? LauncherButtonActiveColor
+                : hovered
+                    ? LauncherButtonHoveredColor
+                    : LauncherButtonColor;
+
+            drawList.AddRectFilled(
+                buttonMin,
+                buttonMax,
+                ImGuiApi.ColorConvertFloat4ToU32(buttonColor),
+                buttonSize.X * 0.5f);
+        }
+
+        private void RenderLauncherButtonImage(Vector2 buttonMin, Vector2 buttonSize, bool hovered, bool active)
+        {
+            ImGuiApi.SetCursorScreenPos(buttonMin);
+            if (TryDrawLauncher?.Invoke() != true)
+            {
+                RenderLauncherButtonBackground(buttonMin, buttonSize, hovered, active);
+                DrawThumbnailPreview(buttonMin, buttonSize);
+                //        DrawLauncherFallbackIcon(buttonMin, buttonSize);
+            }
+        }
+
+        private static void DrawLauncherFallbackIcon(Vector2 buttonMin, Vector2 buttonSize)
+        {
+            var drawList = ImGuiApi.GetWindowDrawList();
+            var center = buttonMin + (buttonSize * 0.5f);
+            var iconColor = ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.95f, 0.95f, 0.98f, 0.96f));
+            var accentColor = ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.20f, 0.74f, 0.46f, 0.95f));
+
+            drawList.AddCircle(center, 12.0f, accentColor, 24, 1.6f);
+            drawList.AddTriangleFilled(
+                center + new Vector2(-3.0f, -6.0f),
+                center + new Vector2(-3.0f, 6.0f),
+                center + new Vector2(7.0f, 0.0f),
+                iconColor);
         }
 
         private void HandleLauncherDrag()

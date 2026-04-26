@@ -1,3 +1,4 @@
+using Maple.ImGui.Backends.ImGuiCore;
 using Maple.MonoGameAssistant.GameDTO;
 using Maple.MonoGameAssistant.Model;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace Maple.ImGui.Backends.GameUI
     {
         public ILogger Logger { get; } = logger;
         public TryDrawImageDelegate? TryDrawImage { set; get; }
+        public TryDrawLauncherDelegate? TryDrawLauncher { set; get; }
 
         IGameDataService Service { get; } = service;
         List<UiToast> Toasts { get; } = [];
@@ -87,12 +89,13 @@ namespace Maple.ImGui.Backends.GameUI
         {
             try
             {
+
+                ApplyUiScale();
+                UpdateMouseCursorVisibility();
                 if (!EnabledDraw)
                 {
                     return;
                 }
-                ApplyUiScale();
-                UpdateMouseCursorVisibility();
                 UpdateAsyncRequests();
                 RenderSessionWindow();
                 RenderCharacterStatusDialog();

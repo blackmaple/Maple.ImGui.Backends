@@ -1,5 +1,6 @@
-﻿using ImGui.App.D3D11;
-using Maple.ImGui.Backends.D3D11;
+﻿using Hexa.NET.ImGui;
+using ImGui.App.D3D11;
+using Maple.ImGui.Backends.D3D11.ImGuiCore;
 using Maple.ImGui.Backends.GameUI;
 using Maple.MonoGameAssistant.GameCore;
 using Microsoft.Extensions.DependencyInjection;

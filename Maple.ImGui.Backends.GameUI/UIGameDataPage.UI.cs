@@ -50,7 +50,7 @@ namespace Maple.ImGui.Backends.GameUI
 
         private void UpdateMouseCursorVisibility()
         {
-            var b = LauncherVisible || ShowSessionWindow;
+            var b = EnabledDraw && (LauncherVisible || ShowSessionWindow);
             var io = ImGuiApi.GetIO();
             io.MouseDrawCursor = b;
             io.WantCaptureKeyboard = b;

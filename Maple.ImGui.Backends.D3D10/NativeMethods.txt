@@ -1,0 +1,6 @@
+﻿D3D10CreateDevice
+D3D10CreateDeviceAndSwapChain
+D3D10_SDK_VERSION
+D3D10_CREATE_DEVICE_FLAG
+IDXGIDevice
+IDXGIFactory

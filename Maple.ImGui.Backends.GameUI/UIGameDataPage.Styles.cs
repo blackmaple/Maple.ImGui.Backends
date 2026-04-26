@@ -31,6 +31,16 @@ namespace Maple.ImGui.Backends.GameUI
         private static readonly Vector2 DialogActionButtonSize = new(94.0f, 34.0f);
         private const float CardActionButtonSize = 30.0f;
         private const float CardActionButtonSpacing = 8.0f;
+        private const float GridCardVerticalSpacing = 16.0f;
+        private const float GridBottomPadding = 16.0f;
+        private const float GridCardHeight = 112.0f;
+        private const float GridCardThumbnailSize = 48.0f;
+        private const float GridCardTextStartX = 76.0f;
+        private const float GridCardActionButtonSize = 30.0f;
+        private const float GridCardActionButtonSpacing = 8.0f;
+        private const float GridCardControlMargin = 6.0f;
+        private const float SwitchEditorHostWidth = 154.0f;
+        private const float GridCardContentInset = 14.0f;
 
         private const float EditorFrameBorderSize = 1.0f;
         private static readonly Vector2 EditorFramePadding = new(12.0f, 5.0f);
