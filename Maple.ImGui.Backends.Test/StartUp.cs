@@ -1,23 +1,56 @@
-﻿using Hexa.NET.ImGui;
-using ImGui.App.D3D11;
-using Maple.ImGui.Backends.D3D11.ImGuiCore;
-using Maple.ImGui.Backends.GameUI;
+﻿using ImGui.App.D3D11;
+using Maple.Hook.Imp.Dobby.Static;
+using Maple.Hook.WinMsg;
+using Maple.ImGui.Backends;
+using Maple.ImGui.Backends.D3D10;
+using Maple.ImGui.Backends.D3D11;
+using Maple.ImGui.Backends.D3D9;
+using Maple.ImGui.Backends.OPENGL;
+using Maple.ImGui.Backends.Test;
 using Maple.MonoGameAssistant.GameCore;
+using Maple.RenderSpy.Graphics.D3D10;
+using Maple.RenderSpy.Graphics.D3D11;
+using Maple.RenderSpy.Graphics.D3D9;
+using Maple.RenderSpy.Graphics.OPENGL;
+using Maple.RenderSpy.Graphics.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
-var builder = Host.CreateApplicationBuilder();
+var builder = Host.CreateApplicationBuilder(args);
 var services = builder.Services;
-services.AddHostedService<WindowsFormsLifetime<D3D11Window>>();
-Maple.Hook.Imp.Dobby.Dynamic.DobbyHookDynamicExtensions.AddDobbyHookDynamicFactory(services, @"C:\Users\Black\.nuget\packages\maple.hook.imp.dobby.dynamic\0.26.317.1-rc\build\runtimes\win-x64\dobby.dll");
-services.AddSingleton<IGameDataService, GameCheatService_Http>();
-services.AddHttpClient<GameHttpClientService>().ConfigurePrimaryHttpMessageHandler(p => new HttpClientHandler()
+
+services.AddHttpClient< GameHttpClientService>().ConfigurePrimaryHttpMessageHandler(p=> new HttpClientHandler()
 {
     AutomaticDecompression = System.Net.DecompressionMethods.Brotli,
     UseProxy = false,
-}).ConfigureHttpClient(p => p.BaseAddress = new Uri("http://localhost:49123"));
-services.AddGameCheatPage();
+}).ConfigureHttpClient(p=>p.BaseAddress = new Uri("http://localhost:39928"));
+
+services.AddSingleton<IImGuiCustomRender, UIPageManager>();
+services.AddHostedService<D3D9BackendHostedService>();
+//services.AddHostedService<D3D10BackendHostedService>();
+services.AddHostedService<D3D11BackendHostedService>();
+
+services.AddHostedService<OpenGLBackendHostedService>();
+
+services.AddHostedService<WindowsFormsLifetime<D3D11Window>>();
+services.AddWinMsgHookFactory();
+services.AddD3D11FunctionsProvider();
+services.AddD3D9FunctionsProvider();
+services.AddD3D10FunctionsProvider();
+services.AddOPENGLFunctionsProvider();
+
+services.AddWindowsGraphicsHookFactory();
+services.AddDobbyHookNativeFactory();
+
+#if DEBUG
+Maple.Hook.Imp.Dobby.Dynamic.DobbyHookDynamicExtensions.AddDobbyHookDynamicFactory(services, @"C:\Users\Black\.nuget\packages\maple.hook.imp.dobby.dynamic\0.26.317.1-rc\build\runtimes\win-x64\dobby.dll");
+#else
+services.AddDobbyHookNativeFactory();
+
+#endif
+
+
 using var app = builder.Build();
-await app.Services.GetRequiredService<D3D11BackendService>().StartAsync(default).ConfigureAwait(false);
 await app.RunAsync().ConfigureAwait(false);
-Console.ReadLine();
+ 
+
+//Console.ReadLine();
