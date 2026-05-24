@@ -14,7 +14,7 @@
 		<Description>dotNet ImGui Backends</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>hook;c#;dotnet;AOT</PackageTags>
-		<Version>0.26.0426.01-rc</Version>
+		<Version>0.26.0522.01-rc</Version>
 	</PropertyGroup>
 
 
@@ -32,7 +32,7 @@
 	<ItemGroup>
 		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
 		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.8" />
 		<PackageReference Include="Maple.Hook.Abstractions" Version="0.26.401.3-rc" />
 
 	</ItemGroup>

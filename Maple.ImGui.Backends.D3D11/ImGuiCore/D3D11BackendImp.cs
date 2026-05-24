@@ -1,24 +1,17 @@
 ﻿using Hexa.NET.ImGui;
-using Hexa.NET.ImGui.Backends.D3D10;
 using Hexa.NET.ImGui.Backends.D3D11;
-using Hexa.NET.ImGui.Backends.D3D12;
 using Hexa.NET.ImGui.Backends.Win32;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Device;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11DeviceContext;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11RenderTargetView;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Resource;
-using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11ShaderResourceView;
 using Maple.ImGui.Backends.D3D11.GraphicsCore.COM_D3D11Texture2D;
 using Maple.ImGui.Backends.DXGI.COM_DXGISwapChain;
 using Maple.ImGui.Backends.ImGuiCore;
 using Maple.ImGui.Backends.Windows.GraphicsCore.COM;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
-using Windows.Win32.Foundation;
-using Windows.Win32.Graphics.Direct3D11;
 using Windows.Win32.Graphics.Dxgi;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
 using ImGuiApi = Hexa.NET.ImGui.ImGui;
 namespace Maple.ImGui.Backends.D3D11.ImGuiCore
 {

@@ -7,7 +7,7 @@
     {
         void PlatformSetImeDataFn(bool on);
 
-        bool TryGetImageInfo(string? category, string objectId, out nint nativePtr, out float u0, out float v0, out float u1, out float v1);
+        bool TryGetImageInfo(string? category, string objectId, string? image, out nint nativePtr, out float u0, out float v0, out float u1, out float v1);
         bool TryDrawLauncher(out nint nativePtr, out float u0, out float v0, out float u1, out float v1);
         public void BlockInput(IImGuiUIView view) { }
     }

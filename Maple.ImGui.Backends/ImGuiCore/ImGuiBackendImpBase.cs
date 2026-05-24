@@ -59,7 +59,7 @@ namespace Maple.ImGui.Backends.ImGuiCore
             {
                 return false;
             }
-            if (false == uintyInputBridge.TryGetImageInfo(category, objectId, out var nativePtr, out var u0, out var v0, out var u1, out var v1))
+            if (false == uintyInputBridge.TryGetImageInfo(category, objectId, image, out var nativePtr, out var u0, out var v0, out var u1, out var v1))
             {
                 return false;
             }
