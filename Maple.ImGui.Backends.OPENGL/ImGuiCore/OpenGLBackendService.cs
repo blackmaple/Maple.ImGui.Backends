@@ -3,6 +3,7 @@ using Maple.ImGui.Backends.GraphicsCore;
 using Maple.ImGui.Backends.ImGuiCore;
 using Maple.ImGui.Backends.OPENGL.GraphicsCore;
 using Maple.ImGui.Backends.Windows.ImGuiCore;
+using Microsoft.Extensions.Logging;
 namespace Maple.ImGui.Backends.OPENGL.ImGuiCore
 {
     public class OpenGLBackendService : Win32ImGuiBackendService
@@ -12,8 +13,8 @@ namespace Maple.ImGui.Backends.OPENGL.ImGuiCore
  
         OPENGLwglSwapBuffersHookItem HookItem { get; set; }
 
-        public OpenGLBackendService(IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
-            : base(hookFactory, winMsgHookFactory, bridgeCollection,view)
+        public OpenGLBackendService(ILogger<OpenGLBackendService> logger, IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection,IImGuiUIView view)
+            : base(logger,hookFactory, winMsgHookFactory, bridgeCollection,view)
         {
 
             this.HookItem = hookFactory.Create<OPENGLwglSwapBuffersHookItem>(EnumGraphicsType.OPENGL);
