@@ -43,7 +43,7 @@
 	<ItemGroup>
 		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
 		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
-		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.413.1-rc" />
+		<PackageReference Include="Maple.Hook.WinMsg" Version="0.26.524.1-rc" />
 	</ItemGroup>
 
 	<ItemGroup>
