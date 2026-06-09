@@ -17,7 +17,7 @@
 		<Description>dotNet ImGui Backends D3D9</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>hook;c#;dotnet;AOT</PackageTags>
-		<Version>0.26.0524.01-rc</Version>
+		<Version>0.26.0609.01-rc</Version>
 	</PropertyGroup>
 	
 	<ItemGroup>
@@ -41,8 +41,8 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />
-		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.18" />
+		<PackageReference Include="Hexa.NET.ImGui" Version="2.2.10-prerelease" />
+		<PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.19-prerelease" />
 	</ItemGroup>
 
 	<ItemGroup>
