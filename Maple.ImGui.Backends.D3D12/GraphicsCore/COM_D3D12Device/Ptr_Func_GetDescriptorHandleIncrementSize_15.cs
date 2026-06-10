@@ -20,8 +20,8 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Graphics.Direct3D12.D3D12_DESCRIPTOR_HEAP_TYPE, uint> GetDescriptorHandleIncrementSize_15;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_DESCRIPTOR_HEAP_TYPE, uint> _proc =
-            (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_DESCRIPTOR_HEAP_TYPE, uint>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_DESCRIPTOR_HEAP_TYPE, uint> _proc =
+            (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_DESCRIPTOR_HEAP_TYPE, uint>)ptr;
 
         public nint PtrMethod => (nint)_proc;
         public unsafe uint Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType) => _proc(pThis, descriptorHeapType);

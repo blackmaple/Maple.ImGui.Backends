@@ -12,8 +12,8 @@ namespace Maple.ImGui.Backends.DXGI.COM_DXGISwapChain
     [StructLayout(LayoutKind.Sequential)]
     public readonly unsafe struct Ptr_Func_Present_8(nint ptr) : Hook.Abstractions.IHookMethod
     {
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<IDXGISwapChainImp>, uint, uint, COM_HRESULT> _proc
-            = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<IDXGISwapChainImp>, uint, uint, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<IDXGISwapChainImp>, uint, uint, COM_HRESULT> _proc
+            = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<IDXGISwapChainImp>, uint, uint, COM_HRESULT>)ptr;
 
         public const string Name = "Present";
 

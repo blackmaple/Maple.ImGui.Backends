@@ -29,12 +29,12 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore
 
         private static unsafe nint GetHookMethodPointer()
         {
-            delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, uint, UnsafeRef<COM_PTR_IUNKNOWN>, void>
+            delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, uint, UnsafeRef<COM_PTR_IUNKNOWN>, void>
                 _proc = &Hook_Present;
             return new(_proc);
         }
 
-        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall), typeof(CallConvSuppressGCTransition)])]
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static void Hook_Present(COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> @this, uint NumCommandLists, UnsafeRef<COM_PTR_IUNKNOWN> ppCommandLists)
         {
             if (D3D12ExecuteCommandListsHookItem.TryGet(out var hookItem))

@@ -20,7 +20,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint> GetNodeCount_7;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint>)ptr;
 
         public nint PtrMethod => (nint)_proc;
         public unsafe uint Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis) => _proc(pThis);

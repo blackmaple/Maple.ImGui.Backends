@@ -18,7 +18,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12CommandQueue
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, ulong*, ulong*, int> GetClockCalibration_17;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, ulong*, ulong*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, ulong*, ulong*, COM_HRESULT>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, ulong*, ulong*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, ulong*, ulong*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public unsafe COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> pThis, ulong* pGpuTimestamp, ulong* pCpuTimestamp) => _proc(pThis, pGpuTimestamp, pCpuTimestamp);
         public override string ToString() => PtrMethod.ToString("X8");

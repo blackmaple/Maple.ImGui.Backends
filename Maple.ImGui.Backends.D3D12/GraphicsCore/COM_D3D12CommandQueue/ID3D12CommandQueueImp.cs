@@ -48,8 +48,8 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12CommandQueue
             }
             internal D3D12_COMMAND_QUEUE_DESC GetDesc()
             {
-                return @this.Interface_VTable.GetDesc_18.Invoke(@this);
-
+                @this.Interface_VTable.GetDesc_18.Invoke(@this, out var desc);
+                return desc;
             }
         }
     }

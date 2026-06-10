@@ -1,5 +1,6 @@
 ﻿using Maple.Hook.Abstractions;
 using Maple.ImGui.Backends.Windows.GraphicsCore.COM;
+using Maple.UnmanagedExtensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -53,7 +54,11 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
     {
         extension(COM_PTR_IUNKNOWN<ID3D12ResourceImp> @this)
         {
-            internal D3D12_RESOURCE_DESC GetDesc() => @this.Interface_VTable.GetDesc_10.Invoke(@this);
+            internal D3D12_RESOURCE_DESC GetDesc()
+            {
+                @this.Interface_VTable.GetDesc_10.Invoke(@this, out var desc);
+                return desc;
+            }
         }
 
     }
@@ -72,7 +77,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, uint*, void*, int> GetPrivateData_3;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint*, void*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint*, void*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, Guid* guid, uint* pDataSize, void* pData) => _proc(pThis, guid, pDataSize, pData);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -88,7 +93,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, uint, void*, int> SetPrivateData_4;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint, void*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, uint, void*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, Guid* guid, uint dataSize, void* pData) => _proc(pThis, guid, dataSize, pData);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -104,7 +109,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, void*, int> SetPrivateDataInterface_5;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, Guid* guid, void* pUnkData) => _proc(pThis, guid, pUnkData);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -120,7 +125,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Foundation.PCWSTR, int> SetName_6;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, PCWSTR, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, PCWSTR, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, PCWSTR, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, PCWSTR, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, PCWSTR name) => _proc(pThis, name);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -136,7 +141,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, void**, int> GetDevice_7;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void**, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, Guid*, void**, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, Guid* riid, void** ppvDevice) => _proc(pThis, riid, ppvDevice);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -152,7 +157,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_RANGE*, void**, int> Map_8;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void**, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void**, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, uint subresource, D3D12_RANGE* pReadRange, void** ppData) => _proc(pThis, subresource, pReadRange, ppData);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -168,7 +173,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_RANGE*, void> Unmap_9;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_RANGE*, void>)ptr;
         public nint PtrMethod => (nint)_proc;
         public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, uint subresource, D3D12_RANGE* pWrittenRange) => _proc(pThis, subresource, pWrittenRange);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -182,11 +187,13 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
     {
         public const string Name = "GetDesc";
         /// <summary>
-        /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Graphics.Direct3D12.D3D12_RESOURCE_DESC> GetDesc_10;
+        /// Win32 SDK (_WIN32): STDMETHODCALLTYPE(This, RetVal).
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, D3D12_RESOURCE_DESC> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, D3D12_RESOURCE_DESC>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, UnsafeOut<D3D12_RESOURCE_DESC>, void> _proc 
+            = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, UnsafeOut<D3D12_RESOURCE_DESC>, void>)ptr;
         public nint PtrMethod => (nint)_proc;
-        public D3D12_RESOURCE_DESC Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis) => _proc(pThis);
+        public void Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, out D3D12_RESOURCE_DESC desc)
+            => _proc(pThis, UnsafeOut<D3D12_RESOURCE_DESC>.FromOut(out desc));
         public override string ToString() => PtrMethod.ToString("X8");
     }
 
@@ -200,7 +207,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, ulong> GetGPUVirtualAddress_11;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, ulong> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, ulong>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, ulong> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, ulong>)ptr;
         public nint PtrMethod => (nint)_proc;
         public ulong Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis) => _proc(pThis);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -216,7 +223,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_BOX*, void*, uint, uint, int> WriteToSubresource_12;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_BOX*, void*, uint, uint, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_BOX*, void*, uint, uint, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_BOX*, void*, uint, uint, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, uint, D3D12_BOX*, void*, uint, uint, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, uint dstSubresource, D3D12_BOX* pDstBox, void* pSrcData, uint srcRowPitch, uint srcDepthPitch) => _proc(pThis, dstSubresource, pDstBox, pSrcData, srcRowPitch, srcDepthPitch);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -232,7 +239,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, void*, uint, uint, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_BOX*, int> ReadFromSubresource_13;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, void*, uint, uint, uint, D3D12_BOX*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, void*, uint, uint, uint, D3D12_BOX*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, void*, uint, uint, uint, D3D12_BOX*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, void*, uint, uint, uint, D3D12_BOX*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, void* pDstData, uint dstRowPitch, uint dstDepthPitch, uint srcSubresource, D3D12_BOX* pSrcBox) => _proc(pThis, pDstData, dstRowPitch, dstDepthPitch, srcSubresource, pSrcBox);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -248,7 +255,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Graphics.Direct3D12.D3D12_HEAP_PROPERTIES*, global::Windows.Win32.Graphics.Direct3D12.D3D12_HEAP_FLAGS*, int> GetHeapProperties_14;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, D3D12_HEAP_PROPERTIES*, D3D12_HEAP_FLAGS*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, D3D12_HEAP_PROPERTIES*, D3D12_HEAP_FLAGS*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, D3D12_HEAP_PROPERTIES*, D3D12_HEAP_FLAGS*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12ResourceImp>, D3D12_HEAP_PROPERTIES*, D3D12_HEAP_FLAGS*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pThis, D3D12_HEAP_PROPERTIES* pHeapProperties, D3D12_HEAP_FLAGS* pHeapFlags) => _proc(pThis, pHeapProperties, pHeapFlags);
         public override string ToString() => PtrMethod.ToString("X8");

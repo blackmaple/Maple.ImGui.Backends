@@ -15,8 +15,11 @@ public class WindowsFormsLifetime<TWindow>(IHostApplicationLifetime hostLifetime
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var win32ImGuiBackendService = _services.GetRequiredService<Win32ImGuiBackendService>();
-        await win32ImGuiBackendService.StartAsync(stoppingToken).ConfigureAwait(false);
+        var win32ImGuiBackendService = _services.GetService<Win32ImGuiBackendService>();
+        if (win32ImGuiBackendService is not null)
+        {
+            await win32ImGuiBackendService.StartAsync(stoppingToken).ConfigureAwait(false);
+        }
         await Task.Run(() =>
         {
             TWindow.Run();

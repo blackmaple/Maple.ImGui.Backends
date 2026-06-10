@@ -20,7 +20,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Graphics.Direct3D12.D3D12_QUERY_HEAP_DESC*, global::System.Guid*, void**, int> CreateQueryHeap_39;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_QUERY_HEAP_DESC*, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_QUERY_HEAP_DESC*, Guid*, void**, COM_HRESULT>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_QUERY_HEAP_DESC*, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, D3D12_QUERY_HEAP_DESC*, Guid*, void**, COM_HRESULT>)ptr;
 
         public nint PtrMethod => (nint)_proc;
         public unsafe COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, D3D12_QUERY_HEAP_DESC* pDesc, Guid* riid, void** ppvHeap) => _proc(pThis, pDesc, riid, ppvHeap);

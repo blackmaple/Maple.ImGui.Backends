@@ -64,7 +64,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, uint*, void*, int> GetPrivateData_3;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint*, void*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint*, void*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis, Guid* guid, uint* pDataSize, void* pData) => _proc(pThis, guid, pDataSize, pData);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -80,7 +80,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, uint, void*, int> SetPrivateData_4;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint, void*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, uint, void*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis, Guid* guid, uint dataSize, void* pData) => _proc(pThis, guid, dataSize, pData);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -96,7 +96,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, void*, int> SetPrivateDataInterface_5;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void*, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void*, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void*, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis, Guid* guid, void* pUnkData) => _proc(pThis, guid, pUnkData);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -112,7 +112,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Foundation.PCWSTR, int> SetName_6;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, PCWSTR, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, PCWSTR, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, PCWSTR, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, PCWSTR, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis, PCWSTR name) => _proc(pThis, name);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -128,7 +128,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, void**, int> GetDevice_7;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void**, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, Guid*, void**, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis, Guid* riid, void** ppvDevice) => _proc(pThis, riid, ppvDevice);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -144,7 +144,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, ulong> GetCompletedValue_8;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong>)ptr;
         public nint PtrMethod => (nint)_proc;
         public ulong Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis) => _proc(pThis);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -160,8 +160,8 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, ulong, void*, int> SetEventOnCompletion_9;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, HANDLE, COM_HRESULT> _proc =
-            (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, HANDLE, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, HANDLE, COM_HRESULT> _proc =
+            (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, HANDLE, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis, ulong value, HANDLE hEvent) => _proc(pThis, value, hEvent);
         public override string ToString() => PtrMethod.ToString("X8");
@@ -177,7 +177,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Fence
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, ulong, int> Signal_10;
         /// </summary>
-        private readonly delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, COM_HRESULT>)ptr;
+        private readonly delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12FenceImp>, ulong, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12FenceImp> pThis, ulong value) => _proc(pThis, value);
         public override string ToString() => PtrMethod.ToString("X8");

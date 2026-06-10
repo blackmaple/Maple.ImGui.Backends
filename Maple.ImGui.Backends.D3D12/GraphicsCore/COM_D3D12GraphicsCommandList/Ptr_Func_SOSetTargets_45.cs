@@ -19,7 +19,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12GraphicsCommandList
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_STREAM_OUTPUT_BUFFER_VIEW*, void> SOSetTargets_45;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, uint, uint, D3D12_STREAM_OUTPUT_BUFFER_VIEW*, void> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, uint, uint, D3D12_STREAM_OUTPUT_BUFFER_VIEW*, void>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, uint, uint, D3D12_STREAM_OUTPUT_BUFFER_VIEW*, void> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, uint, uint, D3D12_STREAM_OUTPUT_BUFFER_VIEW*, void>)ptr;
         public nint PtrMethod => (nint)_proc;
         public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp> pThis, uint startSlot, uint numViews, D3D12_STREAM_OUTPUT_BUFFER_VIEW* pViews) => _proc(pThis, startSlot, numViews, pViews);
         public override string ToString() => PtrMethod.ToString("X8");

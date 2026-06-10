@@ -18,7 +18,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12CommandAllocator
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::System.Guid*, void**, int> GetDevice_7;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12CommandAllocatorImp>, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12CommandAllocatorImp>, Guid*, void**, COM_HRESULT>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12CommandAllocatorImp>, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12CommandAllocatorImp>, Guid*, void**, COM_HRESULT>)ptr;
         public nint PtrMethod => (nint)_proc;
         public unsafe COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12CommandAllocatorImp> pThis, Guid* riid, void** ppvDevice) => _proc(pThis, riid, ppvDevice);
         public override string ToString() => PtrMethod.ToString("X8");

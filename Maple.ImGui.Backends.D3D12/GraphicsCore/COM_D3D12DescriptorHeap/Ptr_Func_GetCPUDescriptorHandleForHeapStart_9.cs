@@ -16,11 +16,12 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12DescriptorHeap
     {
         public const string Name = "GetCPUDescriptorHandleForHeapStart";
         /// <summary>
-        /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Graphics.Direct3D12.D3D12_CPU_DESCRIPTOR_HANDLE> GetCPUDescriptorHandleForHeapStart_9;
+        /// Win32 SDK (_WIN32): STDMETHODCALLTYPE(This, RetVal).
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp>, D3D12_CPU_DESCRIPTOR_HANDLE> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp>, D3D12_CPU_DESCRIPTOR_HANDLE>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp>, UnsafeOut<D3D12_CPU_DESCRIPTOR_HANDLE>, void> _proc
+            = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp>, UnsafeOut<D3D12_CPU_DESCRIPTOR_HANDLE>, void>)ptr;
         public nint PtrMethod => (nint)_proc;
-        public unsafe D3D12_CPU_DESCRIPTOR_HANDLE Invoke(COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> pThis) => _proc(pThis);
+        public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> pThis, out D3D12_CPU_DESCRIPTOR_HANDLE descHandle) => _proc(pThis, UnsafeOut<D3D12_CPU_DESCRIPTOR_HANDLE>.FromOut(out descHandle));
         public override string ToString() => PtrMethod.ToString("X8");
     }
 }

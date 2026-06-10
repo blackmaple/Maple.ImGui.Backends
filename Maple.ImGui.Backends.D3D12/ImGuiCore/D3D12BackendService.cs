@@ -17,8 +17,8 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         public DXGIPresentHookItem PresentHookItem { get; }
         public D3D12ExecuteCommandListsHookItem ExecuteCommandListsHookItem { get; }
         public DXGIResizeBuffersHookItem ResizeBuffersHookItem { get; }
-          
-        
+        private bool _initialized = false;
+
         public D3D12BackendService(ILogger<D3D12BackendService> logger, IGraphicsHookFactory hookFactory, WinMsgHookFactory winMsgHookFactory, ImGuiBackendBridgeCollection bridgeCollection, IImGuiUIView view)
             : base(logger, hookFactory, winMsgHookFactory, bridgeCollection, view)
         {
@@ -30,7 +30,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             this.ResizeBuffersHookItem.SyncCallback = HookResizeBuffers;
         }
 
-        private   COM_HRESULT HookPresent(COM_PTR_IUNKNOWN<IDXGISwapChainImp> @this, uint SyncInterval, uint Flags, DXGIPresentHookItem hookItem)
+        private COM_HRESULT HookPresent(COM_PTR_IUNKNOWN<IDXGISwapChainImp> @this, uint SyncInterval, uint Flags, DXGIPresentHookItem hookItem)
         {
             if (BackendImp is not null)
             {
@@ -40,20 +40,24 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             {
                 BackendImp = backendImp;
             }
-           
-            return hookItem.OriginalMethod.Invoke(@this, SyncInterval, Flags);
+            var hr = hookItem.OriginalMethod.Invoke(@this, SyncInterval, Flags);
+            return hr;
         }
 
         private void HookExecuteCommandLists(COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> @this, uint NumCommandLists, UnsafeRef<COM_PTR_IUNKNOWN> ppCommandLists, D3D12ExecuteCommandListsHookItem hookItem)
         {
-            BackendImp?.Initialize(@this);
+            if (_initialized == false && BackendImp is not null)
+            {
+                _initialized = BackendImp.Initialize(@this);
+            }
+
             hookItem.OriginalMethod.Invoke(@this, NumCommandLists, ppCommandLists);
-             
+
         }
 
         private COM_HRESULT HookResizeBuffers(COM_PTR_IUNKNOWN<IDXGISwapChainImp> @this, uint BufferCount, uint Width, uint Height, uint NewFormat, uint SwapChainFlags, DXGIResizeBuffersHookItem hookItem)
         {
-            if (BackendImp is not null)
+            if (_initialized && BackendImp is not null)
             {
                 BackendImp.Resetting(@this);
                 BackendImp.Reset(@this);
@@ -83,8 +87,8 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             this.ResizeBuffersHookItem.Dispose();
 
             this.BackendImp?.Dispose();
-           // this.BackendImp = default;
-           
+            // this.BackendImp = default;
+
             return Task.CompletedTask;
 
         }

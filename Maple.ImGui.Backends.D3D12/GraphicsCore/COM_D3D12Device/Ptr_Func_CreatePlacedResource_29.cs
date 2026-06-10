@@ -20,7 +20,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, void*, ulong, global::Windows.Win32.Graphics.Direct3D12.D3D12_RESOURCE_DESC*, global::Windows.Win32.Graphics.Direct3D12.D3D12_RESOURCE_STATES, global::Windows.Win32.Graphics.Direct3D12.D3D12_CLEAR_VALUE*, global::System.Guid*, void**, int> CreatePlacedResource_29;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, ulong, D3D12_RESOURCE_DESC*, D3D12_RESOURCE_STATES, D3D12_CLEAR_VALUE*, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, ulong, D3D12_RESOURCE_DESC*, D3D12_RESOURCE_STATES, D3D12_CLEAR_VALUE*, Guid*, void**, COM_HRESULT>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, ulong, D3D12_RESOURCE_DESC*, D3D12_RESOURCE_STATES, D3D12_CLEAR_VALUE*, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, ulong, D3D12_RESOURCE_DESC*, D3D12_RESOURCE_STATES, D3D12_CLEAR_VALUE*, Guid*, void**, COM_HRESULT>)ptr;
 
         public nint PtrMethod => (nint)_proc;
         public unsafe COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, void* pHeap, ulong heapOffset, D3D12_RESOURCE_DESC* pDesc, D3D12_RESOURCE_STATES initialState, D3D12_CLEAR_VALUE* pOptimizedClearValue, Guid* riid, void** ppvResource) => _proc(pThis, pHeap, heapOffset, pDesc, initialState, pOptimizedClearValue, riid, ppvResource);

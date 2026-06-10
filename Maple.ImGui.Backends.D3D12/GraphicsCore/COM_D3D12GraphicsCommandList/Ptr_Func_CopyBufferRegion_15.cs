@@ -19,7 +19,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12GraphicsCommandList
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, void*, ulong, void*, ulong, ulong, void> CopyBufferRegion_15;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, void*, ulong, void*, ulong, ulong, void> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, void*, ulong, void*, ulong, ulong, void>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, void*, ulong, void*, ulong, ulong, void> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp>, void*, ulong, void*, ulong, ulong, void>)ptr;
         public nint PtrMethod => (nint)_proc;
         public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12GraphicsCommandListImp> pThis, void* pDstBuffer, ulong dstOffset, void* pSrcBuffer, ulong srcOffset, ulong numBytes) => _proc(pThis, pDstBuffer, dstOffset, pSrcBuffer, srcOffset, numBytes);
         public override string ToString() => PtrMethod.ToString("X8");
