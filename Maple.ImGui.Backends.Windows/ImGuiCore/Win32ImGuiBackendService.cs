@@ -46,10 +46,10 @@ namespace Maple.ImGui.Backends.Windows.ImGuiCore
             }
             this.BridgeCollection.PlatformInputBridge?.LoadPreferredChineseSystemFont(18.0f);
             var winMsgHookItem = this.WinMsgHookFactory.CreateRequiresNew(hWnd);
-            winMsgHookItem.SyncCallback += WinProcCallback;
-            winMsgHookItem.EnabledSyncCallback = true;
             winMsgHookItem.AdditionalContent.Set(nameof(ImGuiBackendBridgeCollection), this.BridgeCollection);
             winMsgHookItem.AdditionalContent.Set(nameof(IImGuiUIView), this.View);
+            winMsgHookItem.SyncCallback += WinProcCallback;
+            winMsgHookItem.EnabledSyncCallback = true;
 
             return winMsgHookItem.Start();
         }
