@@ -16,11 +16,13 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12CommandQueue
     {
         public const string Name = "GetDesc";
         /// <summary>
-        /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, global::Windows.Win32.Graphics.Direct3D12.D3D12_COMMAND_QUEUE_DESC> GetDesc_18;
+        /// Win32 SDK (_WIN32): STDMETHODCALLTYPE(This, RetVal).
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, D3D12_COMMAND_QUEUE_DESC> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, D3D12_COMMAND_QUEUE_DESC>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, UnsafeOut<D3D12_COMMAND_QUEUE_DESC>, void> _proc
+            = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>, UnsafeOut<D3D12_COMMAND_QUEUE_DESC>, void>)ptr;
         public nint PtrMethod => (nint)_proc;
-        public unsafe D3D12_COMMAND_QUEUE_DESC Invoke(COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> pThis) => _proc(pThis);
+        public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> pThis, out D3D12_COMMAND_QUEUE_DESC desc)
+            => _proc(pThis, UnsafeOut<D3D12_COMMAND_QUEUE_DESC>.FromOut(out desc));
         public override string ToString() => PtrMethod.ToString("X8");
     }
 

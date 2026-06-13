@@ -1,21 +1,30 @@
 using ImGui.App.D3D11;
+using Maple.ImGui.Backends.Windows.ImGuiCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-public class WindowsFormsLifetime<TWindow>(IHostApplicationLifetime hostLifetime, IServiceProvider services) : BackgroundService
+public class WindowsFormsLifetime<TWindow>(IHostApplicationLifetime hostLifetime, IServiceProvider services)
+    : BackgroundService
    where TWindow : ITestWindow
 {
     private readonly IHostApplicationLifetime _hostLifetime = hostLifetime;
     private readonly IServiceProvider _services = services;
 
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        return Task.Run(() =>
+        var win32ImGuiBackendService = _services.GetService<Win32ImGuiBackendService>();
+        if (win32ImGuiBackendService is not null)
+        {
+            await win32ImGuiBackendService.StartAsync(stoppingToken).ConfigureAwait(false);
+        }
+        await Task.Run(() =>
         {
             TWindow.Run();
             this._hostLifetime.StopApplication();
-        }, stoppingToken);
+        }, stoppingToken).ConfigureAwait(false);
 
     }
 }

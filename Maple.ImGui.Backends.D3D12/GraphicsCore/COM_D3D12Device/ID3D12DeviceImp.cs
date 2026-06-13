@@ -120,14 +120,16 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
             public uint GetDescriptorHandleIncrementSizeForSRV() => @this.Interface_VTable.GetDescriptorHandleIncrementSize_15.Invoke(@this, D3D12_DESCRIPTOR_HEAP_TYPE.D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 
-            void CreateRenderTargetView(COM_PTR_IUNKNOWN pResource, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle)
+            void CreateRenderTargetViewImp(COM_PTR_IUNKNOWN pResource, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle)
             {
                 var pdesc_nullptr = new UnsafeIn<D3D12_RENDER_TARGET_VIEW_DESC>(nint.Zero);
                 @this.Interface_VTable.CreateRenderTargetView_20.Invoke(@this, pResource, pdesc_nullptr, cpuHandle);
             }
 
             internal void CreateRenderTargetView(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pResource, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle)
-                => @this.CreateRenderTargetView(pResource, rtvHandle);
+                => @this.CreateRenderTargetViewImp(pResource, rtvHandle);
+            public void CreateRenderTargetView(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pResource, nuint rtvHandle)
+                    => @this.CreateRenderTargetViewImp(pResource, new D3D12_CPU_DESCRIPTOR_HANDLE() { ptr = rtvHandle });
 
 
 

@@ -18,12 +18,13 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         public const string Name = "GetCustomHeapProperties";
 
         /// <summary>
-        /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_HEAP_TYPE, global::Windows.Win32.Graphics.Direct3D12.D3D12_HEAP_PROPERTIES> GetCustomHeapProperties_26;
+        /// Win32 SDK (_WIN32): STDMETHODCALLTYPE(This, RetVal, nodeMask, heapType).
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_HEAP_TYPE, D3D12_HEAP_PROPERTIES> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_HEAP_TYPE, D3D12_HEAP_PROPERTIES>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_HEAP_TYPE, UnsafeOut<D3D12_HEAP_PROPERTIES>, void> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_HEAP_TYPE, UnsafeOut<D3D12_HEAP_PROPERTIES>, void>)ptr;
 
         public nint PtrMethod => (nint)_proc;
-        public unsafe D3D12_HEAP_PROPERTIES Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, uint nodeMask, D3D12_HEAP_TYPE heapType) => _proc(pThis, nodeMask, heapType);
+        public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, uint nodeMask, D3D12_HEAP_TYPE heapType, out D3D12_HEAP_PROPERTIES properties)
+            => _proc(pThis, nodeMask, heapType, UnsafeOut<D3D12_HEAP_PROPERTIES>.FromOut(out properties));
         public override string ToString() => PtrMethod.ToString("X8");
     }
     /*

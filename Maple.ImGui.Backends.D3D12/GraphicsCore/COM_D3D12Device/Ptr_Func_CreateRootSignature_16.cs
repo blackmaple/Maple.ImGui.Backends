@@ -20,7 +20,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, void*, nuint, global::System.Guid*, void**, int> CreateRootSignature_16;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, void*, nuint, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, void*, nuint, Guid*, void**, COM_HRESULT>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, void*, nuint, Guid*, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, void*, nuint, Guid*, void**, COM_HRESULT>)ptr;
 
         public nint PtrMethod => (nint)_proc;
         public unsafe COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, uint nodeMask, void* pBlobWithRootSignature, nuint blobLengthInBytes, Guid* riid, void** ppvRootSignature) => _proc(pThis, nodeMask, pBlobWithRootSignature, blobLengthInBytes, riid, ppvRootSignature);

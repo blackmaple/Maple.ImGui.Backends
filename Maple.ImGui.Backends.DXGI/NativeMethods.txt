@@ -6,3 +6,4 @@ IDXGIDevice
 IDXGIFactory
 IDXGISwapChain3
 IDXGISwapChain4
+PCWSTR

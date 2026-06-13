@@ -90,6 +90,10 @@ public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropService
                 pSurface = ppObject.Get<T>();
                 return h;
             }
+
+
+            public COM_HRESULT Present(uint SyncInterval, uint Flags)
+                => @this.Interface_VTable.Present_8.Invoke(@this, SyncInterval, Flags);
         }
     }
 

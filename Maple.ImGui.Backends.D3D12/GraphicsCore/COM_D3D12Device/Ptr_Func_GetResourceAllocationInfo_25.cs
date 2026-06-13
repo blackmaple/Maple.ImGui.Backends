@@ -18,12 +18,13 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         public const string Name = "GetResourceAllocationInfo";
 
         /// <summary>
-        /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_RESOURCE_DESC*, global::Windows.Win32.Graphics.Direct3D12.D3D12_RESOURCE_ALLOCATION_INFO> GetResourceAllocationInfo_25;
+        /// Win32 SDK (_WIN32): STDMETHODCALLTYPE(This, RetVal, visibleMask, numResourceDescs, pResourceDescs).
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, uint, D3D12_RESOURCE_DESC*, D3D12_RESOURCE_ALLOCATION_INFO> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, uint, D3D12_RESOURCE_DESC*, D3D12_RESOURCE_ALLOCATION_INFO>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, uint, D3D12_RESOURCE_DESC*, UnsafeOut<D3D12_RESOURCE_ALLOCATION_INFO>, void> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, uint, D3D12_RESOURCE_DESC*, UnsafeOut<D3D12_RESOURCE_ALLOCATION_INFO>, void>)ptr;
 
         public nint PtrMethod => (nint)_proc;
-        public unsafe D3D12_RESOURCE_ALLOCATION_INFO Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, uint visibleMask, uint numResourceDescs, D3D12_RESOURCE_DESC* pResourceDescs) => _proc(pThis, visibleMask, numResourceDescs, pResourceDescs);
+        public unsafe void Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, uint visibleMask, uint numResourceDescs, D3D12_RESOURCE_DESC* pResourceDescs, out D3D12_RESOURCE_ALLOCATION_INFO info)
+            => _proc(pThis, visibleMask, numResourceDescs, pResourceDescs, UnsafeOut<D3D12_RESOURCE_ALLOCATION_INFO>.FromOut(out info));
         public override string ToString() => PtrMethod.ToString("X8");
     }
     /*

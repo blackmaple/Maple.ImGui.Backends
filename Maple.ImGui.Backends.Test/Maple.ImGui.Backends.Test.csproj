@@ -18,6 +18,7 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.8" />
        <PackageReference Include="Vortice.Direct3D9" Version="3.8.3" />
+		<PackageReference Include="Vortice.Direct3D12" Version="3.8.3" />
 		<PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
 		<PackageReference Include="Vortice.DXGI" Version="3.8.3" />
 		<PackageReference Include="Vortice.Mathematics" Version="2.1.1" />
@@ -36,6 +37,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D10\Maple.ImGui.Backends.D3D10.csproj" />
 	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D11\Maple.ImGui.Backends.D3D11.csproj" />
+	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D12\Maple.ImGui.Backends.D3D12.csproj" />
 	  <ProjectReference Include="..\Maple.ImGui.Backends.D3D9\Maple.ImGui.Backends.D3D9.csproj" />
 	  <ProjectReference Include="..\Maple.ImGui.Backends.GameUI\Maple.ImGui.Backends.GameUI.csproj" />
 	  <ProjectReference Include="..\Maple.ImGui.Backends.OPENGL\Maple.ImGui.Backends.OPENGL.csproj" />

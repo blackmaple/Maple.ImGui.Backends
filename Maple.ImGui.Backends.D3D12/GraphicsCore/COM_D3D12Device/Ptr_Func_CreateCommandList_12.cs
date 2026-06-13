@@ -20,8 +20,8 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, uint, global::Windows.Win32.Graphics.Direct3D12.D3D12_COMMAND_LIST_TYPE, void*, void*, global::System.Guid*, void**, int> CreateCommandList_12;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_COMMAND_LIST_TYPE, COM_PTR_IUNKNOWN, COM_PTR_IUNKNOWN, UnsafeIn<Guid>, UnsafeOut<COM_PTR_IUNKNOWN>, COM_HRESULT> _proc =
-            (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_COMMAND_LIST_TYPE, COM_PTR_IUNKNOWN, COM_PTR_IUNKNOWN, UnsafeIn<Guid>, UnsafeOut<COM_PTR_IUNKNOWN>, COM_HRESULT>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_COMMAND_LIST_TYPE, COM_PTR_IUNKNOWN, COM_PTR_IUNKNOWN, UnsafeIn<Guid>, UnsafeOut<COM_PTR_IUNKNOWN>, COM_HRESULT> _proc =
+            (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, uint, D3D12_COMMAND_LIST_TYPE, COM_PTR_IUNKNOWN, COM_PTR_IUNKNOWN, UnsafeIn<Guid>, UnsafeOut<COM_PTR_IUNKNOWN>, COM_HRESULT>)ptr;
 
         public nint PtrMethod => (nint)_proc;
         public unsafe COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, uint nodeMask, D3D12_COMMAND_LIST_TYPE type, COM_PTR_IUNKNOWN pCommandAllocator, COM_PTR_IUNKNOWN pInitialCommandList, UnsafeIn<Guid> riid, UnsafeOut<COM_PTR_IUNKNOWN> ppCommandList)

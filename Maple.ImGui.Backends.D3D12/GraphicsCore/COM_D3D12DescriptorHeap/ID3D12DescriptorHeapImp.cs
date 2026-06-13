@@ -22,6 +22,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12DescriptorHeap
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct ID3D12DescriptorHeapImp
     {
+
         public static readonly Guid GUID = new("8EFB471D-616C-4F49-90F7-127BB763FA51");
 
         internal readonly Ptr_Func_GetPrivateData_3 GetPrivateData_3;
@@ -38,8 +39,19 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12DescriptorHeap
     {
         extension(COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> @this)
         {
-            internal D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart() => @this.Interface_VTable.GetCPUDescriptorHandleForHeapStart_9.Invoke(@this);
-            internal D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart() => @this.Interface_VTable.GetGPUDescriptorHandleForHeapStart_10.Invoke(@this);
+            internal D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart()
+            {
+                @this.Interface_VTable.GetCPUDescriptorHandleForHeapStart_9.Invoke(@this, out var descHandle);
+                return descHandle;
+            }
+            public nuint GetCPUDescriptorHandleForHeapStart_Test() => @this.GetCPUDescriptorHandleForHeapStart().ptr;
+            internal D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart()
+            {
+                @this.Interface_VTable.GetGPUDescriptorHandleForHeapStart_10.Invoke(@this, out var descHandle);
+                return descHandle;
+            }
+
+            public ulong GetGPUDescriptorHandleForHeapStart_Test() => @this.GetGPUDescriptorHandleForHeapStart().ptr;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Device
         /// <summary>
         /// public delegate* unmanaged[MemberFunction]<global::System.Runtime.InteropServices.ComWrappers.ComInterfaceDispatch*, void*, global::Windows.Win32.Security.SECURITY_ATTRIBUTES*, uint, global::Windows.Win32.Foundation.PCWSTR, global::Windows.Win32.Foundation.HANDLE*, int> CreateSharedHandle_31;
         /// </summary>
-        private readonly unsafe delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, void*, uint, PCWSTR, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall, SuppressGCTransition]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, void*, uint, PCWSTR, void**, COM_HRESULT>)ptr;
+        private readonly unsafe delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, void*, uint, PCWSTR, void**, COM_HRESULT> _proc = (delegate* unmanaged[Stdcall]<COM_PTR_IUNKNOWN<ID3D12DeviceImp>, void*, void*, uint, PCWSTR, void**, COM_HRESULT>)ptr;
 
         public nint PtrMethod => (nint)_proc;
         public unsafe COM_HRESULT Invoke(COM_PTR_IUNKNOWN<ID3D12DeviceImp> pThis, void* pObject, void* pSecurityAttributes, uint access, PCWSTR name, void** pHandle) => _proc(pThis, pObject, pSecurityAttributes, access, name, pHandle);

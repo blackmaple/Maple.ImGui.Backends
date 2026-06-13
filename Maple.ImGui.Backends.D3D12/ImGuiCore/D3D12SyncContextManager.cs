@@ -6,7 +6,9 @@ using Maple.ImGui.Backends.DXGI.COM_DXGISwapChain;
 using Maple.ImGui.Backends.DXGI.COM_DXGISwapChain3;
 using Maple.ImGui.Backends.Windows.GraphicsCore.COM;
 using Windows.Win32;
+using Windows.Win32.Graphics.Direct3D12;
 using Windows.Win32.Graphics.Dxgi;
+using VorticeD3D12 = Vortice.Direct3D12;
 
 namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 {
@@ -38,6 +40,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                     yield return new D3D12FrameContext()
                     {
                         CommandAllocator = pCommandAllocator,
+                        VorticeCommandAllocator = new VorticeD3D12.ID3D12CommandAllocator((nint)pCommandAllocator),
                         FenceValue = 0UL
                     };
                 }
@@ -82,22 +85,34 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                 yield break;
             }
 
-            var rtvSize = pDevice.GetDescriptorHandleIncrementSizeForRTV();
-            var rtvHandle = rtvHeap.GetCPUDescriptorHandleForHeapStart();
+            var vorticeDevice = new VorticeD3D12.ID3D12Device((nint)pDevice);
+            var vorticeRtvHeap = new VorticeD3D12.ID3D12DescriptorHeap((nint)rtvHeap);
+            var rtvSize = vorticeDevice.GetDescriptorHandleIncrementSize(VorticeD3D12.DescriptorHeapType.RenderTargetView);
+            var vorticeRtvHandle = vorticeRtvHeap.GetCPUDescriptorHandleForHeapStart();
+            var rtvHandle = new D3D12_CPU_DESCRIPTOR_HANDLE() { ptr = (nuint)vorticeRtvHandle.Ptr };
 
-            for (uint i = 0u; i < bufferCount; i++)
+            try
             {
-                if (pSwapChain.GetBuffer<ID3D12ResourceImp>(i, ID3D12ResourceImp.GUID, out var pBackBuffer))
+                for (uint i = 0u; i < bufferCount; i++)
                 {
-                    pDevice.CreateRenderTargetView(pBackBuffer, rtvHandle);
-                    yield return new D3D12BackBuffer()
+                    if (pSwapChain.GetBuffer<ID3D12ResourceImp>(i, ID3D12ResourceImp.GUID, out var pBackBuffer))
                     {
-                        RTV = rtvHandle,
-                        Resource = pBackBuffer,
-                    };
-                    rtvHandle.ptr += rtvSize;
+                        var vorticeBackBuffer = new VorticeD3D12.ID3D12Resource((nint)pBackBuffer);
+                        vorticeDevice.CreateRenderTargetView(vorticeBackBuffer, null, new VorticeD3D12.CpuDescriptorHandle() { Ptr = (nuint)rtvHandle.ptr });
+                        yield return new D3D12BackBuffer()
+                        {
+                            RTV = rtvHandle,
+                            Resource = pBackBuffer,
+                            VorticeResource = vorticeBackBuffer,
+                        };
+                        rtvHandle.ptr += rtvSize;
+                    }
                 }
-
+            }
+            finally
+            {
+                vorticeRtvHeap.NativePointer = IntPtr.Zero;
+                vorticeDevice.NativePointer = IntPtr.Zero;
             }
         }
         public static D3D12BackBuffer[] CreateBackBuffers(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain, COM_PTR_IUNKNOWN<ID3D12DeviceImp> pDevice, COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> rtvHeap)

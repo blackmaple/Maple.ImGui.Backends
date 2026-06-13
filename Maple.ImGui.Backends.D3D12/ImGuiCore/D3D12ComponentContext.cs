@@ -12,6 +12,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using Windows.Win32;
 using Windows.Win32.Graphics.Direct3D12;
+using VorticeD3D12 = Vortice.Direct3D12;
 namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 {
     internal sealed class D3D12ComponentContext : IDisposable
@@ -33,7 +34,17 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         public required COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> RTVHeapPtr { get; init; }
         public required COM_PTR_IUNKNOWN<ID3D12FenceImp> ID3D12FencePtr { get; init; }
 
+        public required VorticeD3D12.ID3D12Device VorticeDevice { get; init; }
+        public required VorticeD3D12.ID3D12GraphicsCommandList VorticeCommandList { get; init; }
+        public required VorticeD3D12.ID3D12DescriptorHeap VorticeSRVHeap { get; init; }
+        public required VorticeD3D12.ID3D12DescriptorHeap VorticeRTVHeap { get; init; }
+        public required VorticeD3D12.ID3D12Fence VorticeFence { get; init; }
+
         public COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> ID3D12CommandQueuePtr { get; set; } = default;
+        public VorticeD3D12.ID3D12CommandQueue? VorticeCommandQueue { get; set; }
+
+        private static VorticeD3D12.CpuDescriptorHandle ToVortice(D3D12_CPU_DESCRIPTOR_HANDLE handle)
+            => new() { Ptr = (nuint)handle.ptr };
 
         public void Dispose()
         {
@@ -48,15 +59,21 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 
         }
 
-        public void SetCommandQueue(COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> commandQueue)
+        public bool SetCommandQueue(COM_PTR_IUNKNOWN<ID3D12CommandQueueImp> commandQueue)
         {
-            if (this.ID3D12CommandQueuePtr == nint.Zero)
+            if (this.ID3D12CommandQueuePtr != nint.Zero)
             {
-                if (commandQueue.GetDesc().Type != D3D12_COMMAND_LIST_TYPE.D3D12_COMMAND_LIST_TYPE_DIRECT)
-                {
-                    this.ID3D12CommandQueuePtr = commandQueue;
-                }
+                return true;
             }
+            var vorticeQueue = new VorticeD3D12.ID3D12CommandQueue((nint)commandQueue);
+            if (vorticeQueue.GetDescription().Type == VorticeD3D12.CommandListType.Direct)
+            {
+                this.ID3D12CommandQueuePtr = commandQueue;
+                this.VorticeCommandQueue = vorticeQueue;
+                return true;
+            }
+            vorticeQueue.NativePointer = IntPtr.Zero;
+            return false;
         }
 
         #region Fence&Signal
@@ -71,7 +88,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         }
         public ulong SignalFence(ulong frameFence)
         {
-            this.ID3D12CommandQueuePtr.Signal(this.ID3D12FencePtr, frameFence);
+            this.VorticeCommandQueue!.Signal(this.VorticeFence, frameFence);
             return frameFence;
         }
         public void WaitForFence(ulong fenceValue)
@@ -82,14 +99,14 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                 return;
             }
             //已经处理
-            var completed = this.ID3D12FencePtr.GetCompletedValue();
+            var completed = this.VorticeFence.CompletedValue;
             if (completed >= fenceValue)
             {
                 return;
             }
             //等待
             var fenceEvent = ID3D12FenceImpExtension.CreateEvent();
-            this.ID3D12FencePtr.SetEventOnCompletion(fenceValue, fenceEvent);
+            this.VorticeFence.SetEventOnCompletion(fenceValue, fenceEvent);
             PInvoke.WaitForSingleObject(fenceEvent, PInvoke.INFINITE);
             PInvoke.CloseHandle(fenceEvent);
         }
@@ -113,7 +130,9 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             , D3D12_CPU_DESCRIPTOR_HANDLE cpu, D3D12_GPU_DESCRIPTOR_HANDLE gpu)
         {
             Queue<D3D12TextureSlot> textureSlots = new(TEXTURE_MAX_SLOT);
-            var srvSize = pDevice.GetDescriptorHandleIncrementSizeForSRV();
+            var vorticeDevice = new VorticeD3D12.ID3D12Device((nint)pDevice);
+            var srvSize = vorticeDevice.GetDescriptorHandleIncrementSize(VorticeD3D12.DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
+            vorticeDevice.NativePointer = IntPtr.Zero;
             //var cpu = pSrvHeap.GetCPUDescriptorHandleForHeapStart();
             //var gpu = pSrvHeap.GetGPUDescriptorHandleForHeapStart();
             for (uint slot = TEXTURE_START_SLOT; slot < SRV_HEAP_CAPACITY; ++slot)
@@ -136,23 +155,9 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             {
                 return false;   
             }
-            var pDesc = pResource.GetDesc();
-            var srvDesc = new D3D12_SHADER_RESOURCE_VIEW_DESC()
-            {
-                Format = pDesc.Format,
-                ViewDimension = D3D12_SRV_DIMENSION.D3D12_SRV_DIMENSION_TEXTURE2D,
-                Shader4ComponentMapping = PInvoke.D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
-                Anonymous = new D3D12_SHADER_RESOURCE_VIEW_DESC._Anonymous_e__Union()
-                {
-                    Texture2D = new D3D12_TEX2D_SRV()
-                    {
-                        MipLevels = pDesc.MipLevels,
-                        MostDetailedMip = 0,
-                        ResourceMinLODClamp = 0,
-                    }
-                }
-            };
-            this.ID3D12DevicePtr.CreateShaderResourceView(pResource, srvDesc, textureSlots.CPU);
+            var vorticeResource = new VorticeD3D12.ID3D12Resource((nint)pResource);
+            this.VorticeDevice.CreateShaderResourceView(vorticeResource, null, ToVortice(textureSlots.CPU));
+            vorticeResource.NativePointer = IntPtr.Zero;
             pSRV = textureSlots.GPU;
             return true;
         }

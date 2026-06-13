@@ -2,8 +2,10 @@
 using Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12Resource;
 using Maple.ImGui.Backends.Windows.GraphicsCore.COM;
 using Maple.UnmanagedExtensions;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Direct3D12;
 
 namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12GraphicsCommandList
@@ -95,9 +97,21 @@ namespace Maple.ImGui.Backends.D3D12.GraphicsCore.COM_D3D12GraphicsCommandList
                 @this.Interface_VTable.ResourceBarrier_26.Invoke(@this, pBarriers);
             }
 
+            public void ResourceBarrier_Test<T>(ref T pBarriers) where T : unmanaged
+            {
+                var data = Unsafe.As<T, D3D12_RESOURCE_BARRIER>(ref pBarriers);
+                @this.ResourceBarrier(data);
+            }
+
 
             internal void OMSetRenderTargets(params ReadOnlySpan<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles)
             {
+                @this.Interface_VTable.OMSetRenderTargets_46.Invoke(@this, rtvHandles, false, default);
+            }
+
+            public void OMSetRenderTargets_Test(nuint rtvHandle)
+            {
+                Span<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles = stackalloc D3D12_CPU_DESCRIPTOR_HANDLE[1] { new() { ptr = rtvHandle } };
                 @this.Interface_VTable.OMSetRenderTargets_46.Invoke(@this, rtvHandles, false, default);
             }
 
