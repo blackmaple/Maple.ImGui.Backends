@@ -109,6 +109,10 @@ namespace Maple.ImGui.Backends.GameUI
                     ViewingCharacterStatus = result.Data;
                     ShowCharacterStatusDialog = true;
                     PendingCharacterStatusOriginalValue = null;
+                    foreach (var attr in result.Data.Data.CharacterAttributes ?? [])
+                    {
+                        RefreshSwitchDisplayEditorCache(attr);
+                    }
                     AddToast(result.Message ?? GetUiText("Toast.Request.CharacterStatus.Updated"), UiToastKind.Success);
                 },
                 onError: exception =>
@@ -120,18 +124,23 @@ namespace Maple.ImGui.Backends.GameUI
             _switchDisplayUpdateRequest.Update(
                 onSuccess: result =>
                 {
-                    PendingSwitchDisplayOriginalValue = null;
                     if (!result.IsSuccess || result.Data is null)
                     {
+                        RestoreSwitchDisplayIfMutable();
                         AddToast(result.Message ?? GetUiText("Toast.Request.SwitchDisplay.UpdateFailure"), UiToastKind.Error);
                         return;
                     }
 
+                    if (IsSwitchDisplayMutable(result.Data.Display))
+                    {
+                        ReplaceCurrentSwitchDisplay(result.Data.Display);
+                    }
+                    PendingSwitchDisplayOriginalValue = null;
                     AddToast(result.Data.Message, UiToastKind.Success);
                 },
                 onError: exception =>
                 {
-                    PendingSwitchDisplayOriginalValue = null;
+                    RestoreSwitchDisplayIfMutable();
                     AddToast(exception.Message, UiToastKind.Error);
                 });
 

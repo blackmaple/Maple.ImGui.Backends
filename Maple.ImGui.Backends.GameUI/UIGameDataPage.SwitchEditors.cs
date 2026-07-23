@@ -32,13 +32,43 @@ namespace Maple.ImGui.Backends.GameUI
             if (attribute.TextEditorType)
             {
                 var editorKey = GetSwitchDisplayEditorKey(attribute, index);
-                var decimalText = SwitchDisplayEditorTexts.TryGetValue(editorKey, out var cachedText)
+                var initialText = SwitchDisplayEditorTexts.TryGetValue(editorKey, out var cachedText)
                     ? cachedText
                     : attribute.DecimalValue.ToString(CultureInfo.InvariantCulture);
-                decimalText = RenderStepInput("##DecimalValue", $"DecimalValue_{index}", decimalText, false);
-                SwitchDisplayEditorTexts[editorKey] = decimalText;
-                if (decimal.TryParse(decimalText, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue)
-                    || decimal.TryParse(decimalText, NumberStyles.Number, CultureInfo.CurrentCulture, out decimalValue))
+
+                var availableWidth = ImGuiApi.GetContentRegionAvail().X;
+                var controlWidth = MathF.Max(1.0f, availableWidth - (StepButtonWidth * 2.0f) - (StepButtonSpacing * 2.0f));
+                var totalWidth = controlWidth + (StepButtonWidth * 2.0f) + (StepButtonSpacing * 2.0f);
+                var startX = ImGuiApi.GetCursorPosX() + MathF.Max(0.0f, (availableWidth - totalWidth) * 0.5f);
+
+                ImGuiApi.SetCursorPosX(startX);
+                var editValue = initialText;
+                PushUnifiedInteractiveStyle();
+                var stepped = false;
+                if (ImGuiApi.Button($"-##DecimalValue_{index}", new Vector2(StepButtonWidth, 0.0f)))
+                {
+                    editValue = StepNumericValue(editValue, -1m, false);
+                    stepped = true;
+                }
+
+                ImGuiApi.SameLine(0.0f, StepButtonSpacing);
+                ImGuiApi.SetNextItemWidth(controlWidth);
+                ImGuiApi.InputText("##DecimalValue", ref editValue, (nuint)SearchInputBufferSize, ImGuiInputTextFlags.CharsDecimal);
+                var deactivatedAfterEdit = ImGuiApi.IsItemDeactivatedAfterEdit();
+                SwitchDisplayEditorTexts[editorKey] = editValue;
+
+                ImGuiApi.SameLine(0.0f, StepButtonSpacing);
+                if (ImGuiApi.Button($"+##DecimalValue_{index}", new Vector2(StepButtonWidth, 0.0f)))
+                {
+                    editValue = StepNumericValue(editValue, 1m, false);
+                    SwitchDisplayEditorTexts[editorKey] = editValue;
+                    stepped = true;
+                }
+
+                PopUnifiedInteractiveStyle();
+
+                if ((stepped || deactivatedAfterEdit)
+                    && decimal.TryParse(editValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
                 {
                     if (attribute.DecimalValue != decimalValue)
                     {

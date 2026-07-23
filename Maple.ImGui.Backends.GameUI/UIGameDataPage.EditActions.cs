@@ -454,7 +454,7 @@ namespace Maple.ImGui.Backends.GameUI
             {
                 if (updatedDisplay.TextEditorType)
                 {
-                    SwitchDisplayEditorTexts[key] = updatedDisplay.ContentValue ?? string.Empty;
+                    SwitchDisplayEditorTexts[key] = updatedDisplay.DecimalValue.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -505,6 +505,20 @@ namespace Maple.ImGui.Backends.GameUI
             //         originalValue.Target.DecimalValue = originalValue.DecimalValue;
             //        originalValue.Target.SwitchValue = originalValue.SwitchValue;
             RefreshSwitchDisplayEditorCache(originalValue.Target);
+        }
+
+        private static bool IsSwitchDisplayMutable(GameSwitchDisplayDTO display)
+        {
+            return display.TextEditorType || display.SelectsType || display.MultipleType || display.SwitchesType;
+        }
+
+        private void RestoreSwitchDisplayIfMutable()
+        {
+            if (PendingSwitchDisplayOriginalValue is { } pending && IsSwitchDisplayMutable(pending.Target))
+            {
+                RestoreSwitchDisplayOriginalValue(pending);
+            }
+            PendingSwitchDisplayOriginalValue = null;
         }
     }
 }

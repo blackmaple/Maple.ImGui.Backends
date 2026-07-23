@@ -15,7 +15,7 @@ services.AddHttpClient<GameHttpClientService>().ConfigurePrimaryHttpMessageHandl
 {
     AutomaticDecompression = System.Net.DecompressionMethods.Brotli,
     UseProxy = false,
-}).ConfigureHttpClient(p => p.BaseAddress = new Uri("http://localhost:2559"));
+}).ConfigureHttpClient(p => p.BaseAddress = new Uri("http://localhost:48749"));
 services.AddSingleton<IGameDataService, GameCheatService_Http>();
 //services.AddSingleton<IImGuiUIView, UIGameDataPage>();
 //services.AddHostedService<D3D9BackendHostedService>();
