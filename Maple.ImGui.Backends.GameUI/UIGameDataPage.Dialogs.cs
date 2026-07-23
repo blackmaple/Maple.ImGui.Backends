@@ -23,7 +23,7 @@ namespace Maple.ImGui.Backends.GameUI
             return PendingCharacterSkillAction is null;
         }
 
-        private bool BeginStandardDialog(string overlayId, string dialogId, ref bool isOpen)
+        private bool BeginStandardDialog(string overlayId, string dialogId, ref bool isOpen, Vector4? borderColor = null, float? borderSize = null)
         {
             var mainViewport = ImGuiApi.GetMainViewport();
             ImGuiApi.SetNextWindowViewport(mainViewport.ID);
@@ -56,7 +56,7 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.SetNextWindowPos(MainWindowPosition + MainWindowSize * 0.5f, ImGuiCond.Always, new Vector2(0.5f, 0.5f));
             ImGuiApi.SetNextWindowSizeConstraints(new Vector2(EditDialogWidth, 0.0f), new Vector2(EditDialogWidth, float.MaxValue));
             ImGuiApi.SetNextWindowFocus();
-            PushPopupDialogStyle();
+            PushPopupDialogStyle(borderColor, borderSize);
             var dialogFlags = ImGuiWindowFlags.NoTitleBar
                 | ImGuiWindowFlags.NoResize
                 | ImGuiWindowFlags.NoScrollbar
@@ -88,7 +88,7 @@ namespace Maple.ImGui.Backends.GameUI
                 return;
             }
 
-            if (!BeginStandardDialog("GameSessionHelpOverlay", "GameSessionHelpDialog", ref isOpen))
+            if (!BeginStandardDialog("GameSessionHelpOverlay", "GameSessionHelpDialog", ref isOpen, EditDialogAccentBorder, EditDialogAccentBorderSize))
             {
                 ShowGameSessionHelpDialog = isOpen;
                 return;
@@ -101,7 +101,7 @@ namespace Maple.ImGui.Backends.GameUI
             var apiVer = GameSessionInfo?.ApiVer ?? string.Empty;
             var qq = GameSessionInfo?.QQ ?? string.Empty;
 
-            DrawThumbnailPreview(popupPos + new Vector2(22.0f, 26.0f), new Vector2(58.0f, 72.0f));
+            DrawThumbnailPreview(popupPos + new Vector2(22.0f, 26.0f), new Vector2(48.0f, 48.0f));
 
             ImGuiApi.SetCursorPos(new Vector2(96.0f, 20.0f));
             ImGuiApi.PushStyleColor(ImGuiCol.Text, new Vector4(0.98f, 0.98f, 0.98f, 1.0f));
@@ -123,8 +123,17 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.PopTextWrapPos();
             ImGuiApi.PopStyleColor();
 
-            ImGuiApi.SetCursorPos(new Vector2(22.0f, 128.0f));
+            var chipY = ImGuiApi.GetCursorPosY() + 12.0f + ImGuiApi.GetTextLineHeight();
+            ImGuiApi.SetCursorPos(new Vector2(22.0f, MathF.Max(chipY, 88.0f)));
             RenderInfoChip(GetUiText("Dialog.Help.ApiVersion", apiVer));
+
+            if (!string.IsNullOrWhiteSpace(qq))
+            {
+                ImGuiApi.SetCursorPos(new Vector2(22.0f, ImGuiApi.GetCursorPosY() + 8.0f));
+                ImGuiApi.PushStyleColor(ImGuiCol.Text, new Vector4(0.92f, 0.92f, 1.0f, 1.0f));
+                ImGuiApi.TextUnformatted(qq);
+                ImGuiApi.PopStyleColor();
+            }
 
             ImGuiApi.SetCursorPos(new Vector2(popupSize.X - 40.0f, 16.0f));
             PushIconButtonStyle(
@@ -138,16 +147,6 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             PopIconButtonStyle();
-
-            if (!string.IsNullOrWhiteSpace(qq))
-            {
-                var qqText = qq;
-                var qqSize = ImGuiApi.CalcTextSize(qqText);
-                ImGuiApi.SetCursorPos(new Vector2(popupSize.X - qqSize.X - 24.0f, popupSize.Y - 38.0f));
-                ImGuiApi.PushStyleColor(ImGuiCol.Text, new Vector4(0.92f, 0.92f, 1.0f, 1.0f));
-                ImGuiApi.TextUnformatted(qqText);
-                ImGuiApi.PopStyleColor();
-            }
 
             EndStandardDialog();
             ShowGameSessionHelpDialog = isOpen;
@@ -1079,7 +1078,7 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             PendingOpenCurrencyEditPopup = false;
-            if (!BeginStandardDialog("CurrencyEditOverlay", "CurrencyEditDialog", ref isOpen))
+            if (!BeginStandardDialog("CurrencyEditOverlay", "CurrencyEditDialog", ref isOpen, EditDialogAccentBorder, EditDialogAccentBorderSize))
             {
                 if (!isOpen)
                 {
@@ -1146,7 +1145,7 @@ namespace Maple.ImGui.Backends.GameUI
             }
 
             PendingOpenInventoryEditPopup = false;
-            if (!BeginStandardDialog("InventoryEditOverlay", "InventoryEditDialog", ref isOpen))
+            if (!BeginStandardDialog("InventoryEditOverlay", "InventoryEditDialog", ref isOpen, EditDialogAccentBorder, EditDialogAccentBorderSize))
             {
                 if (!isOpen)
                 {

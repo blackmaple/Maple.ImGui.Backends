@@ -1,7 +1,10 @@
-﻿using Maple.Hook.Imp.Dobby.Dynamic;
+﻿using ImGui.App.D3D11;
+using Maple.Hook.Imp.Dobby.Dynamic;
 using Maple.Hook.WinMsg;
 using Maple.ImGui.Backends.D3D11.GraphicsCore;
 using Maple.ImGui.Backends.D3D11.ImGuiCore;
+using Maple.ImGui.Backends.D3D12.GraphicsCore;
+using Maple.ImGui.Backends.D3D12.ImGuiCore;
 using Maple.ImGui.Backends.ImGuiCore;
 using Maple.ImGui.Backends.Windows.GraphicsCore;
 using Maple.ImGui.Backends.Windows.ImGuiCore;
@@ -11,35 +14,15 @@ namespace Maple.ImGui.Backends.GameUI
 {
     public static class GameUIExtensions
     {
-        public static IServiceCollection AddGameCheatPage_Test(this IServiceCollection @this)
+        public static IServiceCollection AddHookD3D11(this IServiceCollection @this)
         {
-            //   EnsureRenderSpyAssembliesLoaded();
+            @this.AddHostedService<WindowsFormsLifetime<D3D11Window>>();
+
             @this.AddDefaultWin32InputBridge();
             @this.AddBridgeCollection();
             @this.AddSingleton<IImGuiUIView, UIGameDataPage>();
 
-            //     @this.AddHostedService<D3D11BackendHostedService>();
-
-
-            @this.AddWinMsgHookFactory();
-            @this.AddD3D11FunctionsProvider();
-
-            @this.AddWindowsGraphicsHookFactory(true);
-            @this.AddDobbyHookDynamicFactory("Dobby.dll");
-            //  @this.AddDobbyHookDynamicFactory();
-            return @this;
-        }
-
-
-
-        public static IServiceCollection AddGameCheatPage(this IServiceCollection @this)
-        {
-            //   EnsureRenderSpyAssembliesLoaded();
-            @this.AddDefaultWin32InputBridge();
-            @this.AddBridgeCollection();
-            @this.AddSingleton<IImGuiUIView, UIGameDataPage>();
-
-            @this.AddSingleton<D3D11BackendService>();
+            @this.AddSingleton<Win32ImGuiBackendService,D3D11BackendService>();
 
 
             @this.AddWinMsgHookFactory();
@@ -47,8 +30,28 @@ namespace Maple.ImGui.Backends.GameUI
 
             @this.AddWindowsGraphicsHookFactory();
             @this.AddDobbyHookDynamicFactory("Dobby.dll");
-            //     @this.AddDobbyHookNativeFactory();
             return @this;
+        }
+
+
+
+        public static IServiceCollection AddHookD3D12(this IServiceCollection @this)
+        {
+            @this.AddHostedService<WindowsFormsLifetime<D3D12Window>>();
+
+            @this.AddDefaultWin32InputBridge();
+            @this.AddBridgeCollection();
+            @this.AddSingleton<IImGuiUIView, UIGameDataPage>();
+
+            @this.AddSingleton<Win32ImGuiBackendService,D3D12BackendService>();
+
+
+            @this.AddWinMsgHookFactory();
+            @this.AddD3D12FunctionsProvider();
+
+            @this.AddWindowsGraphicsHookFactory();
+            @this.AddDobbyHookDynamicFactory("Dobby.dll");
+             return @this;
         }
 
 

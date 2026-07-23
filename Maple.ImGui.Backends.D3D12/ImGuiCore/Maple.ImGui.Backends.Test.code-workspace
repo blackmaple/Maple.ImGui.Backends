@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../../Maple.ImGui.Backends.Test"
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {}
+}

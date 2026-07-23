@@ -125,28 +125,34 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 
         #region TextureSlot
         public required Queue<D3D12TextureSlot> TextureSlots { get; set; }
+        public static Queue<D3D12TextureSlot> CreateDescriptorSlots(
+            COM_PTR_IUNKNOWN<ID3D12DeviceImp> pDevice,
+            D3D12_CPU_DESCRIPTOR_HANDLE cpu,
+            D3D12_GPU_DESCRIPTOR_HANDLE gpu,
+            uint startSlot,
+            uint slotCount)
+        {
+            Queue<D3D12TextureSlot> textureSlots = new((int)slotCount);
+            var vorticeDevice = new VorticeD3D12.ID3D12Device((nint)pDevice);
+            var srvSize = vorticeDevice.GetDescriptorHandleIncrementSize(VorticeD3D12.DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
+            vorticeDevice.NativePointer = IntPtr.Zero;
+            for (uint index = 0; index < slotCount; ++index)
+            {
+                var slot = startSlot + index;
+                var offset = slot * srvSize;
+                textureSlots.Enqueue(new D3D12TextureSlot()
+                {
+                    CPU = new() { ptr = cpu.ptr + offset },
+                    GPU = new() { ptr = gpu.ptr + offset },
+                });
+            }
+            return textureSlots;
+        }
         public static Queue<D3D12TextureSlot> CreateTextureSlot(
             COM_PTR_IUNKNOWN<ID3D12DeviceImp> pDevice, COM_PTR_IUNKNOWN<ID3D12DescriptorHeapImp> pSrvHeap
             , D3D12_CPU_DESCRIPTOR_HANDLE cpu, D3D12_GPU_DESCRIPTOR_HANDLE gpu)
         {
-            Queue<D3D12TextureSlot> textureSlots = new(TEXTURE_MAX_SLOT);
-            var vorticeDevice = new VorticeD3D12.ID3D12Device((nint)pDevice);
-            var srvSize = vorticeDevice.GetDescriptorHandleIncrementSize(VorticeD3D12.DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
-            vorticeDevice.NativePointer = IntPtr.Zero;
-            //var cpu = pSrvHeap.GetCPUDescriptorHandleForHeapStart();
-            //var gpu = pSrvHeap.GetGPUDescriptorHandleForHeapStart();
-            for (uint slot = TEXTURE_START_SLOT; slot < SRV_HEAP_CAPACITY; ++slot)
-            {
-                var offset = slot * srvSize;
-                cpu.ptr += offset;
-                gpu.ptr += offset;
-                textureSlots.Enqueue(new D3D12TextureSlot()
-                {
-                    CPU = cpu,
-                    GPU = gpu,
-                });
-            }
-            return textureSlots;
+            return CreateDescriptorSlots(pDevice, cpu, gpu, TEXTURE_START_SLOT, TEXTURE_MAX_SLOT);
         }
         public bool TryCreateShaderResourceView(COM_PTR_IUNKNOWN<ID3D12ResourceImp> pResource, out D3D12_GPU_DESCRIPTOR_HANDLE pSRV)
         {

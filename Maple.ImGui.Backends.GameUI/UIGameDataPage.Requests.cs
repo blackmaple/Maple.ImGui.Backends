@@ -120,21 +120,18 @@ namespace Maple.ImGui.Backends.GameUI
             _switchDisplayUpdateRequest.Update(
                 onSuccess: result =>
                 {
+                    PendingSwitchDisplayOriginalValue = null;
                     if (!result.IsSuccess || result.Data is null)
                     {
-                        RestorePendingSwitchDisplayOriginalValue();
                         AddToast(result.Message ?? GetUiText("Toast.Request.SwitchDisplay.UpdateFailure"), UiToastKind.Error);
                         return;
                     }
-
-                    ReplaceCurrentSwitchDisplay(result.Data.Display);
-                    PendingSwitchDisplayOriginalValue = null;
 
                     AddToast(result.Data.Message, UiToastKind.Success);
                 },
                 onError: exception =>
                 {
-                    RestorePendingSwitchDisplayOriginalValue();
+                    PendingSwitchDisplayOriginalValue = null;
                     AddToast(exception.Message, UiToastKind.Error);
                 });
 

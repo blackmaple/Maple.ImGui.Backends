@@ -34,9 +34,9 @@ namespace Maple.ImGui.Backends.GameUI
         private const float EditDialogWidth = 420.0f;
         private const float EditDialogThumbnailWidth = 58.0f;
         private const float EditDialogThumbnailHeight = 72.0f;
-        private static readonly Vector4 LauncherButtonColor = new(0.00f, 0.76f, 0.46f, 0.50f);
-        private static readonly Vector4 LauncherButtonHoveredColor = new(0.00f, 0.76f, 0.46f, 0.68f);
-        private static readonly Vector4 LauncherButtonActiveColor = new(0.00f, 0.76f, 0.46f, 0.82f);
+        private static readonly Vector4 LauncherButtonColor = new(0.00f, 0.76f, 0.46f, 0.92f);
+        private static readonly Vector4 LauncherButtonHoveredColor = new(0.06f, 0.88f, 0.58f, 1.00f);
+        private static readonly Vector4 LauncherButtonActiveColor = new(0.00f, 0.64f, 0.38f, 1.00f);
         private bool ShowGameSessionHelpDialog;
 
         private bool IsAnyPopupDialogOpen()

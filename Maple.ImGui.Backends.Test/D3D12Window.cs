@@ -39,6 +39,7 @@ namespace ImGui.App.D3D11
         private static WndProcDelegate? s_wndProcDelegate;
         private static int s_rtvDescriptorSize;
         private static uint s_frameIndex;
+        private static ulong s_nextFenceValue = 1;
         private static bool s_isMinimized;
         private static bool s_hasPendingResize;
         private static int s_pendingWidth = 1280;
@@ -183,6 +184,8 @@ namespace ImGui.App.D3D11
             //s_commandList = s_device.CreateCommandList<ID3D12GraphicsCommandList>(CommandListType.Direct, s_commandAllocators[0], null);
             s_commandList.Close();
 
+            Array.Clear(s_fenceValues);
+            s_nextFenceValue = 1;
             s_fence = s_device.CreateFence(0);
 
             CreateRenderTargets();
@@ -262,17 +265,11 @@ namespace ImGui.App.D3D11
 
             //  s_swapChain.Present(1, PresentFlags.None);
             MoveToNextFrame();
-
-
-            unsafe static nint Get(nint _nativePointer, int index)
-            {
-                return new nint(*(void**)((nint)(*(IntPtr*)_nativePointer) + (nint)index * (nint)sizeof(void*)));
-            }
         }
 
         private static void Resize(int width, int height)
         {
-            if (s_swapChain is null)
+            if (s_swapChain is null || s_commandList is null)
             {
                 return;
             }
@@ -282,13 +279,27 @@ namespace ImGui.App.D3D11
 
             WaitForGpu();
 
+            var allocator = s_commandAllocators[(int)s_frameIndex];
+            if (allocator is not null)
+            {
+                // Release command-list references to the old back buffers before resizing the swap chain.
+                allocator.Reset();
+                s_commandList.Reset(allocator);
+                s_commandList.Close();
+            }
+
             for (var i = 0; i < FrameCount; i++)
             {
                 s_renderTargets[i]?.Dispose();
                 s_renderTargets[i] = null;
             }
 
-            s_swapChain.ResizeBuffers(FrameCount, (uint)Math.Max(1, width), (uint)Math.Max(1, height), Format.R8G8B8A8_UNorm, SwapChainFlags.None);
+            var hr = s_swapChain.ResizeBuffers(FrameCount, (uint)width, (uint)height, Format.R8G8B8A8_UNorm, SwapChainFlags.None);
+            if (hr.Failure)
+            {
+                throw new InvalidOperationException($"ResizeBuffers failed: {hr.Code}");
+            }
+
             s_frameIndex = s_swapChain.CurrentBackBufferIndex;
             CreateRenderTargets();
         }
@@ -301,8 +312,9 @@ namespace ImGui.App.D3D11
             }
 
             var currentFrame = s_frameIndex;
-            var nextFenceValue = ++s_fenceValues[currentFrame];
+            var nextFenceValue = s_nextFenceValue++;
             s_commandQueue.Signal(s_fence, nextFenceValue);
+            s_fenceValues[currentFrame] = nextFenceValue;
 
             s_frameIndex = s_swapChain.CurrentBackBufferIndex;
 
@@ -320,8 +332,9 @@ namespace ImGui.App.D3D11
                 return;
             }
 
-            var fenceValue = ++s_fenceValues[s_frameIndex];
+            var fenceValue = s_nextFenceValue++;
             s_commandQueue.Signal(s_fence, fenceValue);
+            s_fenceValues[s_frameIndex] = fenceValue;
             while (s_fence.CompletedValue < fenceValue)
             {
                 Thread.Sleep(1);

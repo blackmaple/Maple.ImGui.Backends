@@ -17,6 +17,7 @@ using Maple.ImGui.Backends.Windows.GraphicsCore.COM;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Direct3D12;
@@ -35,11 +36,18 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         D3D12SyncContextManager syncContextManager,
 
         ImGuiBackendBridgeCollection bridgeCollection,
-        IImGuiUIView view) : ImGuiBackendImpBase(bridgeCollection, view)
+        IImGuiUIView view,
+        DXGI_FORMAT rtvFormat,
+        Queue<D3D12TextureSlot> imguiSrvSlots) : ImGuiBackendImpBase(bridgeCollection, view)
     {
         ImGuiContextPtr ImGuiContextPtr { get; set; } = imguiContext;
         D3D12ComponentContext ComponentContext { get; } = componentContext;
         D3D12SyncContextManager SyncContextManager { get; } = syncContextManager;
+        DXGI_FORMAT RTVFormat { get; } = rtvFormat;
+        bool D3D12Initialized { get; set; }
+        Queue<D3D12TextureSlot> ImGuiSrvSlots { get; } = imguiSrvSlots;
+        object ImGuiSrvSlotsLock { get; } = new();
+        nint DescriptorAllocatorUserData { get; set; }
 
         // Diagnostic bridge wrappers. COM_PTR_IUNKNOWN remains the owner of these native pointers.
         VorticeD3D12.ID3D12GraphicsCommandList VorticeCommandList { get; } = new((nint)componentContext.ID3D12CommandListPtr);
@@ -64,9 +72,6 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         private static unsafe T* ToHexaPtr<T>(nint ptr) where T : unmanaged
             => (T*)ptr;
 
-        private static unsafe ref T ToHexaRef<T>(nint ptr) where T : unmanaged
-            => ref Unsafe.AsRef<T>((void*)ptr);
-
         private static COM_PTR_IUNKNOWN<TImp> DetachToComPtr<TImp>(CppObject obj)
             where TImp : unmanaged
         {
@@ -80,6 +85,108 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 
         private static D3D12_GPU_DESCRIPTOR_HANDLE ToWindows(VorticeD3D12.GpuDescriptorHandle handle)
             => new() { ptr = handle.Ptr };
+
+        private static unsafe D3D12BackendImp GetBackendFromUserData(void* userData)
+        {
+            return (D3D12BackendImp)GCHandle.FromIntPtr((nint)userData).Target!;
+        }
+
+        private bool TryRentImGuiSrvSlot([MaybeNullWhen(false)] out D3D12TextureSlot slot)
+        {
+            lock (this.ImGuiSrvSlotsLock)
+            {
+                return this.ImGuiSrvSlots.TryDequeue(out slot);
+            }
+        }
+
+        private void ReturnImGuiSrvSlot(D3D12TextureSlot slot)
+        {
+            lock (this.ImGuiSrvSlotsLock)
+            {
+                this.ImGuiSrvSlots.Enqueue(slot);
+            }
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+        private static unsafe void SrvDescriptorAllocCallback(ImGuiImplDX12InitInfo* info, D3D12CpuDescriptorHandle* outCpuDescHandle, D3D12GpuDescriptorHandle* outGpuDescHandle)
+        {
+            if (info is null || outCpuDescHandle is null || outGpuDescHandle is null)
+            {
+                return;
+            }
+
+            var backend = GetBackendFromUserData(info->UserData);
+            if (!backend.TryRentImGuiSrvSlot(out var slot))
+            {
+                *outCpuDescHandle = default;
+                *outGpuDescHandle = default;
+                return;
+            }
+
+            *outCpuDescHandle = new(slot.CPU.ptr);
+            *outGpuDescHandle = new(slot.GPU.ptr);
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+        private static unsafe void SrvDescriptorFreeCallback(ImGuiImplDX12InitInfo* info, D3D12CpuDescriptorHandle cpuDescHandle, D3D12GpuDescriptorHandle gpuDescHandle)
+        {
+            if (info is null)
+            {
+                return;
+            }
+
+            var backend = GetBackendFromUserData(info->UserData);
+            backend.ReturnImGuiSrvSlot(new D3D12TextureSlot()
+            {
+                CPU = new() { ptr = cpuDescHandle.Ptr },
+                GPU = new() { ptr = gpuDescHandle.Ptr },
+            });
+        }
+
+        private unsafe bool TryInitializeD3D12Backend()
+        {
+            if (this.D3D12Initialized)
+            {
+                return true;
+            }
+
+            var srvCPU = ToWindows(this.ComponentContext.VorticeSRVHeap.GetCPUDescriptorHandleForHeapStart());
+            var srvGPU = ToWindows(this.ComponentContext.VorticeSRVHeap.GetGPUDescriptorHandleForHeapStart());
+            if (this.DescriptorAllocatorUserData == nint.Zero)
+            {
+                this.DescriptorAllocatorUserData = GCHandle.ToIntPtr(GCHandle.Alloc(this));
+            }
+
+            ImGuiImplDX12InitInfo initInfo = new()
+            {
+                Device = ToHexaPtr<Hexa.NET.ImGui.Backends.D3D12.ID3D12Device>((nint)this.ComponentContext.ID3D12DevicePtr),
+                CommandQueue = ToHexaPtr<Hexa.NET.ImGui.Backends.D3D12.ID3D12CommandQueue>((nint)this.ComponentContext.ID3D12CommandQueuePtr),
+                NumFramesInFlight = D3D12SyncContextManager.NUM_FRAMES_IN_FLIGHT,
+                RTVFormat = (int)this.RTVFormat,
+                DSVFormat = (int)DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
+                UserData = (void*)this.DescriptorAllocatorUserData,
+                SrvDescriptorHeap = ToHexaPtr<Hexa.NET.ImGui.Backends.D3D12.ID3D12DescriptorHeap>((nint)this.ComponentContext.SRVHeapPtr),
+                SrvDescriptorAllocFn = (void*)(delegate* unmanaged[Cdecl]<ImGuiImplDX12InitInfo*, D3D12CpuDescriptorHandle*, D3D12GpuDescriptorHandle*, void>)&SrvDescriptorAllocCallback,
+                SrvDescriptorFreeFn = (void*)(delegate* unmanaged[Cdecl]<ImGuiImplDX12InitInfo*, D3D12CpuDescriptorHandle, D3D12GpuDescriptorHandle, void>)&SrvDescriptorFreeCallback,
+                LegacySingleSrvCpuDescriptor = new(srvCPU.ptr),
+                LegacySingleSrvGpuDescriptor = new(srvGPU.ptr),
+            };
+
+            ImGuiImplD3D12.SetCurrentContext(this.ImGuiContextPtr);
+            if (!ImGuiImplD3D12.Init(ref initInfo))
+            {
+                return false;
+            }
+
+            if (!ImGuiImplD3D12.CreateDeviceObjects())
+            {
+                ImGuiImplD3D12.Shutdown();
+                return false;
+            }
+
+            this.D3D12Initialized = true;
+            return true;
+        }
 
         private static DXGI_SWAP_CHAIN_DESC GetDesc(COM_PTR_IUNKNOWN<IDXGISwapChainImp> pSwapChain)
         {
@@ -193,7 +300,6 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             D3D12BackBuffer[]? backBuffers = default;
             D3D12FrameContext[]? frameContexts = default;
             var win32Init = false;
-            var d3d12Init = false;
             ImGuiContextPtr imguiContext = default;
             try
             {
@@ -222,31 +328,12 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                 {
                     return ImGuiBackendException.Throw<bool>($"{nameof(D3D12BackendService.InitPlatform)} IS ERROR");
                 }
+
                 var vorticeSrvHeap = new VorticeD3D12.ID3D12DescriptorHeap((nint)srvHeap);
                 var srvCPU = ToWindows(vorticeSrvHeap.GetCPUDescriptorHandleForHeapStart());
                 var srvGPU = ToWindows(vorticeSrvHeap.GetGPUDescriptorHandleForHeapStart());
                 vorticeSrvHeap.NativePointer = IntPtr.Zero;
-                ImGuiImplDX12InitInfo initInfo = new()
-                {
-                    Device = ToHexaPtr<Hexa.NET.ImGui.Backends.D3D12.ID3D12Device>((nint)pDevice),
-                    NumFramesInFlight = D3D12SyncContextManager.NUM_FRAMES_IN_FLIGHT,
-                    RTVFormat = (int)pDesc.BufferDesc.Format,
-                    DSVFormat = (int)DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
-                    SrvDescriptorHeap = ToHexaPtr<Hexa.NET.ImGui.Backends.D3D12.ID3D12DescriptorHeap>((nint)srvHeap),
-                    LegacySingleSrvCpuDescriptor = new(srvCPU.ptr),
-                    LegacySingleSrvGpuDescriptor = new(srvGPU.ptr),
-
-                };
-                ImGuiImplD3D12.SetCurrentContext(imguiContext);
-                d3d12Init = ImGuiImplD3D12.Init(ref initInfo);
-                if (!d3d12Init)
-                {
-                    return ImGuiBackendException.Throw<bool>($"{nameof(ImGuiImplD3D12.Init)} IS ERROR");
-                }
-                if (!ImGuiImplD3D12.CreateDeviceObjects())
-                {
-                    return ImGuiBackendException.Throw<bool>($"{nameof(ImGuiImplD3D12.CreateDeviceObjects)} IS ERROR");
-                }
+                var imguiSrvSlots = D3D12ComponentContext.CreateDescriptorSlots(pDevice, srvCPU, srvGPU, D3D12ComponentContext.IMGUI_SRV_START_SLOT, D3D12ComponentContext.IMGUI_SRV_MAX_SLOT);
 
                 var componentContext = new D3D12ComponentContext()
                 {
@@ -267,7 +354,7 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
 
                 backendImp = new D3D12BackendImp(
                     imguiContext, componentContext,
-                    syncContextManager, backendService.BridgeCollection, backendService.View);
+                    syncContextManager, backendService.BridgeCollection, backendService.View, pDesc.BufferDesc.Format, imguiSrvSlots);
                 return true;
 
             }
@@ -285,7 +372,6 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                 if (pDevice) pDevice.Release();
 
 
-                if (d3d12Init) ImGuiImplD3D12.Shutdown();
                 if (win32Init) ImGuiImplWin32.Shutdown();
                 if (!imguiContext.IsNull) ImGuiApi.DestroyContext(imguiContext);
             }
@@ -312,7 +398,10 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         public override void Reset(nint context)
         {
             //2. 通知 ImGui 后端清理其设备资源（字体纹理等）
-            ImGuiImplD3D12.InvalidateDeviceObjects();
+            if (this.D3D12Initialized)
+            {
+                ImGuiImplD3D12.InvalidateDeviceObjects();
+            }
 
             // 3. 释放你的 BackBuffer 资源
             this.SyncContextManager.DestroyBackBuffer();
@@ -329,7 +418,10 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
             this.SyncContextManager.ResetFrameContexts();
 
             // 7. 通知 ImGui 后端重新创建设备资源
-            ImGuiImplD3D12.CreateDeviceObjects();
+            if (this.D3D12Initialized)
+            {
+                ImGuiImplD3D12.CreateDeviceObjects();
+            }
         }
         #endregion
 
@@ -362,8 +454,10 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         protected unsafe override void Build(nint context)
         {
             //执行 ImGui 的绘制命令
-            ref var commandList = ref ToHexaRef<Hexa.NET.ImGui.Backends.D3D12.ID3D12GraphicsCommandList>((nint)this.ComponentContext.ID3D12CommandListPtr);
-            ImGuiImplD3D12.RenderDrawData(ImGuiApi.GetDrawData(), ref commandList);
+            var drawData = ImGuiApi.GetDrawData();
+            ref var commandList = ref Unsafe.AsRef<Hexa.NET.ImGui.Backends.D3D12.ID3D12GraphicsCommandList>(
+                (void*)(nint)this.ComponentContext.ID3D12CommandListPtr);
+            ImGuiImplD3D12.RenderDrawData(drawData, ref commandList);
 
 
         }
@@ -372,16 +466,22 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
         public override bool Initialize(nint context)
         {
             var initialized = this.ComponentContext.SetCommandQueue(new COM_PTR_IUNKNOWN<ID3D12CommandQueueImp>(context));
-            if (initialized && this.VorticeCommandQueue is null)
+            if (!initialized)
+            {
+                return false;
+            }
+
+            if (this.VorticeCommandQueue is null)
             {
                 this.VorticeCommandQueue = new((nint)this.ComponentContext.ID3D12CommandQueuePtr);
             }
-            return initialized;
+
+            return this.TryInitializeD3D12Backend();
         }
 
         public unsafe override void Run(nint context)
         {
-            if (this.ComponentContext.ID3D12CommandQueuePtr == nint.Zero || this.VorticeCommandQueue is null)
+            if (!this.D3D12Initialized || this.ComponentContext.ID3D12CommandQueuePtr == nint.Zero || this.VorticeCommandQueue is null)
             {
                 return;
             }
@@ -461,7 +561,16 @@ namespace Maple.ImGui.Backends.D3D12.ImGuiCore
                 }
                 this.TextureCache.Clear();
 
-                ImGuiImplD3D12.Shutdown();
+                if (this.D3D12Initialized)
+                {
+                    ImGuiImplD3D12.Shutdown();
+                    this.D3D12Initialized = false;
+                }
+                if (this.DescriptorAllocatorUserData != nint.Zero)
+                {
+                    GCHandle.FromIntPtr(this.DescriptorAllocatorUserData).Free();
+                    this.DescriptorAllocatorUserData = nint.Zero;
+                }
                 ImGuiImplWin32.Shutdown();
                 ImGuiApi.DestroyContext(imguiContext);
             }

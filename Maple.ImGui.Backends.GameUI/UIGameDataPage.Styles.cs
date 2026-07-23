@@ -15,6 +15,8 @@ namespace Maple.ImGui.Backends.GameUI
         private static readonly Vector4 PopupDialogWindowBg = new(0.10f, 0.10f, 0.11f, 0.98f);
         private static readonly Vector4 PopupDialogBorder = new(1f, 1f, 1f, 0.08f);
         private static readonly Vector4 PopupDialogDimBg = new(0f, 0f, 0f, 0f);
+        private static readonly Vector4 EditDialogAccentBorder = new(0.24f, 0.72f, 0.38f, 0.95f);
+        private const float EditDialogAccentBorderSize = 2.0f;
         private const float TooltipMinWidth = 280.0f;
 
         private const float OverlayDialogBorderSize = 1.0f;
@@ -79,13 +81,13 @@ namespace Maple.ImGui.Backends.GameUI
         private static readonly Vector4 DisabledActionButtonActiveColor = new(0.26f, 0.28f, 0.32f, 0.64f);
         private static readonly Vector4 DisabledActionIconColor = new(0.68f, 0.70f, 0.74f, 0.96f);
 
-        private static void PushPopupDialogStyle()
+        private static void PushPopupDialogStyle(Vector4? borderColor = null, float? borderSize = null)
         {
             ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowRounding, PopupDialogWindowRounding);
             ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowPadding, PopupDialogPadding);
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, PopupDialogBorderSize);
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowBorderSize, borderSize ?? PopupDialogBorderSize);
             ImGuiApi.PushStyleColor(ImGuiCol.WindowBg, PopupDialogWindowBg);
-            ImGuiApi.PushStyleColor(ImGuiCol.Border, PopupDialogBorder);
+            ImGuiApi.PushStyleColor(ImGuiCol.Border, borderColor ?? PopupDialogBorder);
             ImGuiApi.PushStyleColor(ImGuiCol.ModalWindowDimBg, PopupDialogDimBg);
         }
 

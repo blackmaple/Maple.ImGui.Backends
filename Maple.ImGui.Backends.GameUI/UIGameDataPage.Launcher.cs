@@ -29,8 +29,8 @@ namespace Maple.ImGui.Backends.GameUI
             ImGuiApi.SetNextWindowBgAlpha(0.0f);
 
             ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowRounding, buttonSizeValue * 0.5f);
-            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, buttonSizeValue * 0.5f);
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowRounding, 12.0f);
+            ImGuiApi.PushStyleVar(ImGuiStyleVar.FrameRounding, 12.0f);
             ImGuiApi.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
             ImGuiApi.PushStyleColor(ImGuiCol.Border, new Vector4(1f, 1f, 1f, 0.00f));
             if (!ImGuiApi.Begin("##SessionLauncher", menuFlags))
@@ -75,17 +75,21 @@ namespace Maple.ImGui.Backends.GameUI
         {
             var drawList = ImGuiApi.GetWindowDrawList();
             var buttonMax = buttonMin + buttonSize;
-            var buttonColor = active
-                ? LauncherButtonActiveColor
+            const float rounding = 12.0f;
+            var bgColor = active
+                ? new Vector4(0.16f, 0.17f, 0.20f, 1.0f)
                 : hovered
-                    ? LauncherButtonHoveredColor
-                    : LauncherButtonColor;
+                    ? new Vector4(0.26f, 0.27f, 0.31f, 1.0f)
+                    : new Vector4(0.21f, 0.22f, 0.26f, 1.0f);
 
-            drawList.AddRectFilled(
+            drawList.AddRectFilled(buttonMin, buttonMax, ImGuiApi.ColorConvertFloat4ToU32(bgColor), rounding);
+            drawList.AddRect(
                 buttonMin,
                 buttonMax,
-                ImGuiApi.ColorConvertFloat4ToU32(buttonColor),
-                buttonSize.X * 0.5f);
+                ImGuiApi.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 0.08f)),
+                rounding,
+                ImDrawFlags.None,
+                1.0f);
         }
 
         private void RenderLauncherButtonImage(Vector2 buttonMin, Vector2 buttonSize, bool hovered, bool active)
@@ -94,8 +98,7 @@ namespace Maple.ImGui.Backends.GameUI
             if (TryDrawLauncher?.Invoke() != true)
             {
                 RenderLauncherButtonBackground(buttonMin, buttonSize, hovered, active);
-                DrawThumbnailPreview(buttonMin, buttonSize);
-                //        DrawLauncherFallbackIcon(buttonMin, buttonSize);
+                DrawLauncherFallbackIcon(buttonMin, buttonSize);
             }
         }
 
@@ -103,15 +106,15 @@ namespace Maple.ImGui.Backends.GameUI
         {
             var drawList = ImGuiApi.GetWindowDrawList();
             var center = buttonMin + (buttonSize * 0.5f);
-            var iconColor = ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.95f, 0.95f, 0.98f, 0.96f));
-            var accentColor = ImGuiApi.ColorConvertFloat4ToU32(new Vector4(0.20f, 0.74f, 0.46f, 0.95f));
+            var featureColor = ImGuiApi.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, 0.95f));
 
-            drawList.AddCircle(center, 12.0f, accentColor, 24, 1.6f);
-            drawList.AddTriangleFilled(
-                center + new Vector2(-3.0f, -6.0f),
-                center + new Vector2(-3.0f, 6.0f),
-                center + new Vector2(7.0f, 0.0f),
-                iconColor);
+            drawList.AddLine(center + new Vector2(-8.0f, -2.0f), center + new Vector2(-5.0f, -5.5f), featureColor, 2.0f);
+            drawList.AddLine(center + new Vector2(-5.0f, -5.5f), center + new Vector2(-2.0f, -2.0f), featureColor, 2.0f);
+
+            drawList.AddLine(center + new Vector2(2.0f, -2.0f), center + new Vector2(5.0f, -5.5f), featureColor, 2.0f);
+            drawList.AddLine(center + new Vector2(5.0f, -5.5f), center + new Vector2(8.0f, -2.0f), featureColor, 2.0f);
+
+            drawList.AddLine(center + new Vector2(-4.0f, 4.0f), center + new Vector2(4.0f, 4.0f), featureColor, 2.2f);
         }
 
         private void HandleLauncherDrag()
